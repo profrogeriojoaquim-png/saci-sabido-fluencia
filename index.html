@@ -19,7 +19,7 @@
             background: white;
             border-radius: 30px;
             padding: 30px;
-            max-width: 800px;
+            max-width: 900px;
             width: 100%;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             text-align: center;
@@ -36,6 +36,16 @@
             border: 2px solid #edf2f7;
             min-height: 200px;
         }
+        .texto-leitura-edicao {
+            font-size: 18px;
+            width: 100%;
+            min-height: 150px;
+            padding: 15px;
+            border-radius: 15px;
+            border: 2px solid #e2e8f0;
+            font-family: inherit;
+            resize: vertical;
+        }
         .palavra { display: inline-block; margin-right: 8px; transition: all 0.3s; }
         .correto { color: #48bb78; font-weight: bold; background: #f0fff4; border-radius: 8px; padding: 0 4px; }
         .erro { color: #f56565; text-decoration: underline wavy; background: #fff5f5; border-radius: 8px; padding: 0 4px; }
@@ -44,8 +54,8 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
-            padding: 15px 30px;
-            font-size: 18px;
+            padding: 12px 24px;
+            font-size: 16px;
             font-weight: bold;
             border-radius: 50px;
             cursor: pointer;
@@ -54,6 +64,8 @@
         }
         button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
         button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .btn-pequeno { padding: 8px 16px; font-size: 14px; }
+        .btn-verde { background: linear-gradient(135deg, #48bb78 0%, #38a169 100%); }
         
         .btn-gravando { background: #f56565; animation: pulse-red 1.5s infinite; }
         @keyframes pulse-red { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
@@ -68,8 +80,33 @@
         .hidden { display: none; }
         .boas-vindas { background: #edf2f7; padding: 20px; border-radius: 20px; margin-bottom: 20px; }
         .alerta { background: #fed7d7; color: #c53030; padding: 10px; border-radius: 10px; margin: 10px 0; }
+        .sucesso { background: #c6f6d5; color: #22543d; padding: 10px; border-radius: 10px; margin: 10px 0; }
+        .info { background: #bee3f8; color: #2c5282; padding: 10px; border-radius: 10px; margin: 10px 0; }
         .timer { font-size: 24px; color: #667eea; font-weight: bold; font-family: monospace; }
         .indicador-silencio { font-size: 14px; color: #718096; margin-top: 10px; }
+        .loading { display: inline-block; width: 16px; height: 16px; border: 2px solid #fff; border-radius: 50%; border-top-color: transparent; animation: spin 0.6s linear infinite; margin-right: 8px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .aba {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        .aba-btn {
+            background: none;
+            color: #4a5568;
+            border-radius: 0;
+            padding: 10px 20px;
+            margin: 0;
+        }
+        .aba-btn.ativo {
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+        }
+        .aba-btn:hover {
+            transform: none;
+            background: #f7fafc;
+        }
         
         @media (max-width: 600px) {
             .container { padding: 20px; }
@@ -81,18 +118,43 @@
 <body>
 
     <div class="container">
+        <!-- TELA INICIAL (PROFESSOR) -->
         <div id="telaInicial">
             <div class="boas-vindas">
-                <h2 id="msgBoasVindas">📖 Avaliação de Fluência</h2>
-                <p id="infoEstudante">Carregando dados...</p>
+                <h2>👨‍🏫 Professor(a)</h2>
+                <p id="infoEstudante">Preparar avaliação de fluência</p>
             </div>
-            <p>📌 <strong>Instruções:</strong> Leia o texto em voz alta com calma e clareza. O sistema analisará sua leitura automaticamente.</p>
-            <div class="texto-leitura" id="previewTexto">
-                O pequeno Saci Sabido encontrou um mistério na mata. Ele usou sua inteligência para resolver o problema sem usar o cachimbo, apenas com sabedoria e envolvimento.
+            
+            <div class="aba">
+                <button class="aba-btn ativo" id="abaConfigBtn" onclick="mostrarAba('config')">📝 Configurar Texto</button>
+                <button class="aba-btn" id="abaAvaliarBtn" onclick="mostrarAba('avaliar')">🎤 Avaliar Aluno</button>
             </div>
-            <button id="btnIniciar" onclick="iniciarLeitura()">🎙️ INICIAR LEITURA REAL</button>
+            
+            <!-- Aba Configuração -->
+            <div id="abaConfig">
+                <p style="margin-bottom: 10px;">📌 Cole o texto que o aluno irá ler:</p>
+                <textarea id="textoPersonalizado" class="texto-leitura-edicao" placeholder="Digite ou cole aqui o texto para avaliação...&#10;&#10;Exemplo:&#10;O pequeno Saci Sabido encontrou um mistério na mata. Ele usou sua inteligência para resolver o problema sem usar o cachimbo, apenas com sabedoria e envolvimento."></textarea>
+                <div style="margin-top: 15px;">
+                    <button class="btn-verde" onclick="salvarTextoProfessor()">💾 Salvar Texto</button>
+                    <button onclick="carregarTextoExemplo()">📖 Carregar Exemplo</button>
+                </div>
+                <div id="statusTexto" style="margin-top: 10px; font-size: 14px;"></div>
+            </div>
+            
+            <!-- Aba Avaliação -->
+            <div id="abaAvaliar" class="hidden">
+                <div id="previewArea">
+                    <p><strong>📖 Texto para leitura:</strong></p>
+                    <div class="texto-leitura" id="previewTexto">
+                        Carregando texto...
+                    </div>
+                </div>
+                <button id="btnIniciar" onclick="iniciarLeitura()">🎙️ INICIAR LEITURA REAL</button>
+                <p style="margin-top: 10px; font-size: 12px; color: #718096;">⚠️ Certifique-se de que o microfone está funcionando</p>
+            </div>
         </div>
 
+        <!-- TELA GRAVAÇÃO -->
         <div id="telaGravacao" class="hidden">
             <div class="timer" id="timer">00:00</div>
             <div class="texto-leitura" id="textoAtivo"></div>
@@ -102,6 +164,7 @@
             <p style="font-size: 12px; color: #a0aec0;">⏱️ Tempo máximo: 2 minutos</p>
         </div>
 
+        <!-- TELA FINAL -->
         <div id="telaFinal" class="hidden">
             <h1>📊 Resultado da Proficiência</h1>
             <div class="estatisticas">
@@ -111,18 +174,29 @@
                 <div class="card-metrica"><h3>📝 Nível</h3><p><strong id="resNivel">-</strong></p></div>
             </div>
             <div class="texto-leitura" id="resultadoVisual"></div>
-            <button onclick="location.reload()">🔄 Tentar Novamente</button>
-            <button style="background: #48bb78; margin-top: 10px;" onclick="voltarAoSistema()">← VOLTAR AO SISTEMA</button>
+            <div id="statusSalvamento" style="margin: 10px 0; font-size: 14px;"></div>
+            <button onclick="reiniciarAvaliacao()">🔄 Nova Avaliação</button>
+            <button style="background: #48bb78;" onclick="voltarTelaInicial()">← VOLTAR AO INÍCIO</button>
         </div>
     </div>
 
     <script>
+        // ============================================
+        // CONFIGURAÇÕES DO SUPABASE
+        // ============================================
+        const SUPABASE_URL = 'https://qmcqffnawtfaenyziwsn.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFtY3FmZm5hd3RmYWVueXppd3NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxNTM5NTMsImV4cCI6MjA4OTcyOTk1M30._CjaNoeJeQp-8s8Jt-dk3bJfktdEV97R5LhLnWgYrNc';
+        
+        // ============================================
+        
         const urlParams = new URLSearchParams(window.location.search);
         const ALUNO_ID = urlParams.get('aluno_id');
         const TURMA_ID = urlParams.get('turma_id');
         
-        const TEXTO_BASE = "O pequeno Saci Sabido encontrou um mistério na mata. Ele usou sua inteligência para resolver o problema sem usar o cachimbo, apenas com sabedoria e envolvimento.";
+        // Texto padrão
+        const TEXTO_PADRAO = "O pequeno Saci Sabido encontrou um mistério na mata. Ele usou sua inteligência para resolver o problema sem usar o cachimbo, apenas com sabedoria e envolvimento.";
         
+        let TEXTO_BASE = TEXTO_PADRAO;
         let recognition;
         let tempoInicio;
         let timerInterval;
@@ -135,33 +209,83 @@
         const SILENCIO_MAXIMO_MS = 5000;
 
         function init() {
-            document.getElementById('previewTexto').innerText = TEXTO_BASE;
+            // Carregar texto salvo do localStorage
+            const textoSalvo = localStorage.getItem('saci_sabido_texto_avaliacao');
+            if (textoSalvo) {
+                TEXTO_BASE = textoSalvo;
+                document.getElementById('textoPersonalizado').value = textoSalvo;
+            } else {
+                document.getElementById('textoPersonalizado').value = TEXTO_PADRAO;
+            }
+            
+            atualizarPreviewTexto();
             
             if (!ALUNO_ID) {
                 document.getElementById('infoEstudante').innerHTML = `
                     <div class="alerta">
-                        ⚠️ <strong>Erro:</strong> Estudante não identificado.<br>
-                        <small>Por favor, acesse através do sistema Saci Sabido.</small>
+                        ⚠️ <strong>Atenção:</strong> Avaliação sem ID do aluno.<br>
+                        <small>Os dados serão salvos mesmo assim, mas vincule depois.</small>
                     </div>
                 `;
-                document.getElementById('btnIniciar').disabled = true;
             } else {
                 document.getElementById('infoEstudante').innerHTML = `
-                    <strong>👤 Estudante:</strong> ID ${ALUNO_ID}<br>
+                    <strong>👤 Aluno:</strong> ID ${ALUNO_ID}<br>
                     <strong>🏫 Turma:</strong> ${TURMA_ID || 'Não especificada'}
                 `;
             }
+        }
+        
+        function mostrarAba(aba) {
+            const btnConfig = document.getElementById('abaConfigBtn');
+            const btnAvaliar = document.getElementById('abaAvaliarBtn');
+            const divConfig = document.getElementById('abaConfig');
+            const divAvaliar = document.getElementById('abaAvaliar');
+            
+            if (aba === 'config') {
+                btnConfig.classList.add('ativo');
+                btnAvaliar.classList.remove('ativo');
+                divConfig.classList.remove('hidden');
+                divAvaliar.classList.add('hidden');
+            } else {
+                btnConfig.classList.remove('ativo');
+                btnAvaliar.classList.add('ativo');
+                divConfig.classList.add('hidden');
+                divAvaliar.classList.remove('hidden');
+                atualizarPreviewTexto();
+            }
+        }
+        
+        function salvarTextoProfessor() {
+            const novoTexto = document.getElementById('textoPersonalizado').value;
+            if (!novoTexto.trim()) {
+                document.getElementById('statusTexto').innerHTML = '<span class="alerta">❌ Digite ou cole um texto válido!</span>';
+                return;
+            }
+            
+            TEXTO_BASE = novoTexto;
+            localStorage.setItem('saci_sabido_texto_avaliacao', novoTexto);
+            atualizarPreviewTexto();
+            
+            document.getElementById('statusTexto').innerHTML = '<span class="sucesso">✅ Texto salvo com sucesso!</span>';
+            setTimeout(() => {
+                document.getElementById('statusTexto').innerHTML = '';
+            }, 3000);
+        }
+        
+        function carregarTextoExemplo() {
+            document.getElementById('textoPersonalizado').value = TEXTO_PADRAO;
+            salvarTextoProfessor();
+        }
+        
+        function atualizarPreviewTexto() {
+            document.getElementById('previewTexto').innerHTML = TEXTO_BASE;
+            document.getElementById('previewTexto').style.fontSize = TEXTO_BASE.length > 300 ? "18px" : "24px";
         }
 
         function iniciarLeitura() {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!SpeechRecognition) {
-                alert("❌ Seu navegador não suporta reconhecimento de voz.\n\n✅ Use Google Chrome, Microsoft Edge ou Opera.\n✅ Verifique se o microfone está conectado e as permissões estão ativadas.");
-                return;
-            }
-
-            if (!ALUNO_ID) {
-                alert("❌ Estudante não identificado. Por favor, reinicie o processo.");
+                alert("❌ Seu navegador não suporta reconhecimento de voz.\n\n✅ Use Google Chrome, Microsoft Edge ou Opera.");
                 return;
             }
 
@@ -204,26 +328,23 @@
                 
                 if (textoProvisorio.trim()) {
                     transcricaoFinal = textoProvisorio.trim();
-                    console.log("📝 Transcrição parcial:", transcricaoFinal);
+                    console.log("📝 Transcrição:", transcricaoFinal);
                     atualizarFeedbackVisual();
                 }
             };
             
             recognition.onerror = (event) => {
-                console.error("Erro no reconhecimento:", event.error);
+                console.error("Erro:", event.error);
                 let mensagemErro = "";
                 switch(event.error) {
                     case 'not-allowed':
-                        mensagemErro = "❌ Permissão do microfone negada. Verifique as configurações do navegador.";
+                        mensagemErro = "❌ Permissão do microfone negada.";
                         break;
                     case 'no-speech':
-                        mensagemErro = "🎤 Nenhum discurso detectado. Verifique se o microfone está funcionando.";
-                        break;
-                    case 'audio-capture':
-                        mensagemErro = "🔇 Microfone não encontrado. Conecte um microfone e tente novamente.";
+                        mensagemErro = "🎤 Nenhum discurso detectado.";
                         break;
                     default:
-                        mensagemErro = `Erro: ${event.error}. Tente novamente.`;
+                        mensagemErro = `Erro: ${event.error}`;
                 }
                 alert(mensagemErro);
                 pararLeitura();
@@ -246,7 +367,7 @@
             for (let i = 0; i < palavrasOriginais.length; i++) {
                 const elemento = document.getElementById(`palavra-${i}`);
                 if (elemento) {
-                    const palavraOriginal = palavrasOriginais[i].replace(/[.,!]/g, '');
+                    const palavraOriginal = palavrasOriginais[i].replace(/[.,!?;]/g, '');
                     if (palavrasReconhecidas.includes(palavraOriginal)) {
                         elemento.classList.add('correto');
                         elemento.classList.remove('erro');
@@ -281,7 +402,6 @@
                 
                 if (segundosDecorridos >= TEMPO_MAXIMO_SEGUNDOS - 10) {
                     document.getElementById('timer').style.color = '#f56565';
-                    document.getElementById('timer').style.animation = 'pulse-red 1s infinite';
                 }
             }, 1000);
         }
@@ -289,8 +409,7 @@
         function iniciarTimeoutAutomatico() {
             timeoutId = setTimeout(() => {
                 if (recognition && document.getElementById('telaGravacao').classList.contains('hidden') === false) {
-                    console.log("⏰ Timeout automático atingido");
-                    alert("⏰ Tempo limite de 2 minutos atingido. Avaliação finalizada automaticamente.");
+                    alert("⏰ Tempo limite de 2 minutos atingido.");
                     pararLeitura();
                 }
             }, TEMPO_MAXIMO_SEGUNDOS * 1000);
@@ -302,11 +421,7 @@
             if (silencioTimeout) clearInterval(silencioTimeout);
             
             if (recognition) {
-                try {
-                    recognition.stop();
-                } catch(e) {
-                    console.log("Erro ao parar recognition:", e);
-                }
+                try { recognition.stop(); } catch(e) {}
             }
             
             const tempoTotalSegundos = (Date.now() - tempoInicio) / 1000;
@@ -314,16 +429,14 @@
         }
 
         function processarResultado(segundos) {
-            const original = TEXTO_BASE.toLowerCase().replace(/[.,!]/g, "").split(' ');
-            const aluno = transcricaoFinal.toLowerCase().replace(/[.,!]/g, "").split(' ');
+            const original = TEXTO_BASE.toLowerCase().replace(/[.,!?;]/g, "").split(' ');
+            const aluno = transcricaoFinal.toLowerCase().replace(/[.,!?;]/g, "").split(' ');
             
             let acertos = 0;
             const minLen = Math.min(original.length, aluno.length);
             
             for (let i = 0; i < minLen; i++) {
-                if (original[i] === aluno[i]) {
-                    acertos++;
-                }
+                if (original[i] === aluno[i]) acertos++;
             }
             
             const ppm = Math.round((acertos / segundos) * 60);
@@ -336,30 +449,17 @@
             else nivel = "🌱 Inicial";
             
             const resultadoHTML = TEXTO_BASE.split(' ').map((palavra, idx) => {
-                const pLimpa = palavra.toLowerCase().replace(/[.,!]/g, "");
+                const pLimpa = palavra.toLowerCase().replace(/[.,!?;]/g, "");
                 const alunoIdx = idx < aluno.length ? aluno[idx] : null;
                 const isCorreto = alunoIdx === pLimpa;
-                
-                if (isCorreto) {
-                    return `<span class="palavra correto">${palavra}</span>`;
-                } else {
-                    return `<span class="palavra erro">${palavra}</span>`;
-                }
+                return `<span class="palavra ${isCorreto ? 'correto' : 'erro'}">${palavra}</span>`;
             }).join(' ');
-            
-            const resultadoCompleto = `
-                <div>${resultadoHTML}</div>
-                <div style="margin-top: 15px; font-size: 14px; text-align: center;">
-                    <span style="color: #48bb78;">✅ Verde = Correta</span> | 
-                    <span style="color: #f56565;">🔴 Vermelho = Não reconhecida</span>
-                </div>
-            `;
             
             document.getElementById('resPPM').innerText = ppm;
             document.getElementById('resPrecisao').innerText = precisao;
             document.getElementById('resTempo').innerText = Math.round(segundos);
             document.getElementById('resNivel').innerHTML = nivel;
-            document.getElementById('resultadoVisual').innerHTML = resultadoCompleto;
+            document.getElementById('resultadoVisual').innerHTML = resultadoHTML + '<div style="margin-top:15px;font-size:14px;"><span style="color:#48bb78;">✅ Verde = Correta</span> | <span style="color:#f56565;">🔴 Vermelho = Erro</span></div>';
             
             document.getElementById('telaGravacao').classList.add('hidden');
             document.getElementById('telaFinal').classList.remove('hidden');
@@ -368,42 +468,60 @@
         }
 
         async function salvarNoSaciSabido(ppm, precisao, tempo, nivel) {
+            const statusDiv = document.getElementById('statusSalvamento');
+            statusDiv.innerHTML = '<span class="loading"></span> Salvando avaliação...';
+            
             const dados = {
-                aluno_id: ALUNO_ID,
-                turma_id: TURMA_ID || "geral",
-                tipo_avaliacao: "fluencia_leitora",
-                texto_base: TEXTO_BASE.substring(0, 100) + "...",
+                aluno_id: ALUNO_ID || "anonimo",
+                turma_id: TURMA_ID || null,
+                texto_avaliacao: TEXTO_BASE.substring(0, 500),
                 ppm_alcancado: ppm,
                 precisao_percentual: precisao,
                 tempo_segundos: Math.round(tempo),
-                nivel_proficiencia: nivel,
-                transcricao_aluno: transcricaoFinal,
-                data_avaliacao: new Date().toISOString(),
-                habilidade_bncc: "EF01LP01",
-                status: "concluido"
+                nivel_proficiencia: nivel.replace(/[🏆📘📖🌱]/g, '').trim(),
+                transcricao_aluno: transcricaoFinal.substring(0, 500),
+                data_avaliacao: new Date().toISOString()
             };
             
-            console.log("💾 Salvando dados no Saci Sabido:", dados);
+            console.log("💾 Salvando:", dados);
             
-            const avaliacoesAnteriores = JSON.parse(localStorage.getItem('saci_sabido_avaliacoes') || '[]');
-            avaliacoesAnteriores.push(dados);
-            localStorage.setItem('saci_sabido_avaliacoes', JSON.stringify(avaliacoesAnteriores));
-            
-            console.log("✅ Dados salvos localmente (modo demonstração)");
+            try {
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/avaliacoes_fluencia`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': `Bearer ${SUPABASE_KEY}`
+                    },
+                    body: JSON.stringify(dados)
+                });
+                
+                if (response.ok) {
+                    statusDiv.innerHTML = '✅ Avaliação salva com sucesso!';
+                    statusDiv.className = 'sucesso';
+                } else {
+                    throw new Error(await response.text());
+                }
+            } catch (error) {
+                console.error("Erro:", error);
+                statusDiv.innerHTML = `⚠️ Salvando localmente: ${error.message}`;
+                statusDiv.className = 'alerta';
+                
+                const local = JSON.parse(localStorage.getItem('saci_sabido_avaliacoes') || '[]');
+                local.push(dados);
+                localStorage.setItem('saci_sabido_avaliacoes', JSON.stringify(local));
+            }
         }
         
-        function voltarAoSistema() {
-            try {
-                window.close();
-            } catch(e) {
-                console.log("Não foi possível fechar a janela");
-            }
-            
-            if (document.referrer) {
-                window.location.href = document.referrer;
-            } else {
-                alert("Use o botão 'Tentar Novamente' para uma nova avaliação.");
-            }
+        function reiniciarAvaliacao() {
+            document.getElementById('telaFinal').classList.add('hidden');
+            document.getElementById('telaInicial').classList.remove('hidden');
+            mostrarAba('avaliar');
+        }
+        
+        function voltarTelaInicial() {
+            document.getElementById('telaFinal').classList.add('hidden');
+            document.getElementById('telaInicial').classList.remove('hidden');
         }
 
         init();
