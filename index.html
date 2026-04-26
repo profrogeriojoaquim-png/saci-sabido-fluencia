@@ -87,7 +87,6 @@
 <body>
 
     <div class="container">
-        <!-- TELA INICIAL (CARREGAMENTO) -->
         <div id="telaInicial">
             <div class="boas-vindas">
                 <h2>📖 Avaliação de Fluência Leitora</h2>
@@ -104,7 +103,6 @@
             </div>
         </div>
 
-        <!-- TELA GRAVAÇÃO -->
         <div id="telaGravacao" class="hidden">
             <div class="timer" id="timer">00:00</div>
             <div class="texto-leitura" id="textoAtivo"></div>
@@ -114,7 +112,6 @@
             <p style="font-size: 12px; color: #a0aec0;">⏱️ Tempo máximo: 2 minutos</p>
         </div>
 
-        <!-- TELA FINAL -->
         <div id="telaFinal" class="hidden">
             <h1>📊 Resultado da Proficiência</h1>
             <div class="estatisticas">
@@ -130,19 +127,17 @@
     </div>
 
     <script>
-        // ============================================
-        // CONFIGURAÇÕES DO SUPABASE
-        // ============================================
         const SUPABASE_URL = 'https://qmcqffnawtfaenyziwsn.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFtY3FmZm5hd3RmYWVueXppd3NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxNTM5NTMsImV4cCI6MjA4OTcyOTk1M30._CjaNoeJeQp-8s8Jt-dk3bJfktdEV97R5LhLnWgYrNc';
-        
-        // ============================================
         
         const urlParams = new URLSearchParams(window.location.search);
         const ATIVIDADE_ID = urlParams.get('atividade_id');
         const ALUNO_ID = urlParams.get('aluno_id');
         const TURMA_ID = urlParams.get('turma_id');
         const JOGO_ID = urlParams.get('jogo_id');
+        
+        // TEXTO FIXO DE FALLBACK (caso o Supabase não responda)
+        const TEXTO_FALLBACK = "O pequeno Saci Sabido encontrou um mistério na mata. Ele usou sua inteligência para resolver o problema sem usar o cachimbo, apenas com sabedoria e envolvimento.";
         
         let TEXTO_BASE = "";
         let NOME_ATIVIDADE = "";
@@ -158,115 +153,91 @@
         const TEMPO_MAXIMO_SEGUNDOS = 120;
         const SILENCIO_MAXIMO_MS = 5000;
 
-        // ============================================
-        // CARREGAR DADOS DO ALUNO
-        // ============================================
         async function carregarAluno() {
             if (!ALUNO_ID) return;
-            
             try {
-                const response = await fetch(
-                    `${SUPABASE_URL}/rest/v1/alunos?id=eq.${ALUNO_ID}&select=nome_aluno`,
-                    {
-                        headers: {
-                            'apikey': SUPABASE_KEY,
-                            'Authorization': `Bearer ${SUPABASE_KEY}`
-                        }
-                    }
-                );
-                
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/alunos?id=eq.${ALUNO_ID}&select=nome_aluno`, {
+                    headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+                });
                 if (response.ok) {
                     const data = await response.json();
                     if (data && data.length > 0) {
                         NOME_ALUNO = data[0].nome_aluno;
-                        document.getElementById('infoAluno').innerHTML = `
-                            <strong>👤 Estudante:</strong> ${NOME_ALUNO?.toLowerCase() || ALUNO_ID.substring(0, 8)}<br>
-                            ${TURMA_ID ? `<strong>🏫 Turma ID:</strong> ${TURMA_ID.substring(0, 8)}...` : ''}
-                        `;
+                        document.getElementById('infoAluno').innerHTML = `<strong>👤 Estudante:</strong> ${NOME_ALUNO?.toLowerCase() || ALUNO_ID.substring(0, 8)}<br>`;
                     }
                 }
             } catch (error) {
                 console.error('Erro ao buscar aluno:', error);
-                document.getElementById('infoAluno').innerHTML = `<strong>👤 Aluno ID:</strong> ${ALUNO_ID.substring(0, 8)}...`;
             }
         }
 
-        // ============================================
-        // CARREGAR ATIVIDADE DO SUPABASE
-        // ============================================
         async function carregarAtividade() {
             if (!ATIVIDADE_ID) {
-                document.getElementById('infoAtividade').innerHTML = `
-                    <div class="alerta">
-                        ❌ <strong>Erro:</strong> Nenhuma atividade identificada.<br>
-                        <small>Use o link fornecido pelo professor.</small>
-                    </div>
-                `;
+                // Usar texto fixo se não tiver atividade_id
+                TEXTO_BASE = TEXTO_FALLBACK;
+                NOME_ATIVIDADE = "Avaliação de Fluência";
+                document.getElementById('infoAtividade').innerHTML = `<strong>📝 Atividade:</strong> ${NOME_ATIVIDADE}`;
+                document.getElementById('previewTexto').innerHTML = TEXTO_BASE;
                 document.getElementById('loadingTexto').classList.add('hidden');
+                document.getElementById('conteudoAtividade').classList.remove('hidden');
                 return;
             }
             
             try {
-                const response = await fetch(
-                    `${SUPABASE_URL}/rest/v1/atividades_fluencia?id=eq.${ATIVIDADE_ID}&select=*`,
-                    {
-                        headers: {
-                            'apikey': SUPABASE_KEY,
-                            'Authorization': `Bearer ${SUPABASE_KEY}`
-                        }
-                    }
-                );
+                // Tentar buscar do Supabase
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/atividades_fluencia?id=eq.${ATIVIDADE_ID}&select=*`, {
+                    headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+                });
                 
-                if (!response.ok) throw new Error('Erro ao buscar atividade');
+                if (!response.ok) throw new Error('HTTP ' + response.status);
                 
                 const data = await response.json();
                 
-                if (!data || data.length === 0) {
+                if (data && data.length > 0) {
+                    TEXTO_BASE = data[0].texto_avaliacao;
+                    NOME_ATIVIDADE = data[0].titulo;
+                } else {
                     throw new Error('Atividade não encontrada');
                 }
                 
-                const atividade = data[0];
-                TEXTO_BASE = atividade.texto_avaliacao;
-                NOME_ATIVIDADE = atividade.titulo;
-                
-                document.getElementById('infoAtividade').innerHTML = `
-                    <strong>📝 Atividade:</strong> ${NOME_ATIVIDADE}
-                `;
+                document.getElementById('infoAtividade').innerHTML = `<strong>📝 Atividade:</strong> ${NOME_ATIVIDADE}`;
                 document.getElementById('previewTexto').innerHTML = TEXTO_BASE;
                 document.getElementById('previewTexto').style.fontSize = TEXTO_BASE.length > 300 ? "18px" : "24px";
                 
-                document.getElementById('loadingTexto').classList.add('hidden');
-                document.getElementById('conteudoAtividade').classList.remove('hidden');
-                
             } catch (error) {
-                console.error('Erro:', error);
+                console.error('Erro ao carregar atividade:', error);
+                // Fallback para texto padrão
+                TEXTO_BASE = TEXTO_FALLBACK;
+                NOME_ATIVIDADE = "Avaliação de Fluência (Modo Offline)";
                 document.getElementById('infoAtividade').innerHTML = `
                     <div class="alerta">
-                        ❌ <strong>Erro ao carregar atividade:</strong><br>
+                        ⚠️ Modo offline - Usando texto padrão<br>
                         <small>${error.message}</small>
                     </div>
+                    <strong>📝 Atividade:</strong> ${NOME_ATIVIDADE}
                 `;
-                document.getElementById('loadingTexto').classList.add('hidden');
+                document.getElementById('previewTexto').innerHTML = TEXTO_BASE;
             }
+            
+            document.getElementById('loadingTexto').classList.add('hidden');
+            document.getElementById('conteudoAtividade').classList.remove('hidden');
         }
 
         function iniciarLeitura() {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!SpeechRecognition) {
-                alert("❌ Seu navegador não suporta reconhecimento de voz.\n\n✅ Use Google Chrome, Microsoft Edge ou Opera.");
+                alert("❌ Seu navegador não suporta reconhecimento de voz.\n\n✅ Use Google Chrome.");
                 return;
             }
 
             if (!TEXTO_BASE) {
-                alert("❌ Texto não carregado. Tente novamente.");
-                return;
+                TEXTO_BASE = TEXTO_FALLBACK;
             }
 
             recognition = new SpeechRecognition();
             recognition.lang = 'pt-BR';
             recognition.continuous = true;
             recognition.interimResults = true;
-            recognition.maxAlternatives = 1;
 
             document.getElementById('telaInicial').classList.add('hidden');
             document.getElementById('telaGravacao').classList.remove('hidden');
@@ -275,7 +246,7 @@
             const palavras = TEXTO_BASE.split(' ');
             container.innerHTML = palavras.map((palavra, idx) => 
                 `<span class="palavra" id="palavra-${idx}">${palavra}</span>`
-            ).join(' ');
+            ).join('');
 
             transcricaoFinal = "";
             tempoInicio = Date.now();
@@ -297,7 +268,6 @@
                         textoProvisorio += event.results[i][0].transcript + " ";
                     }
                 }
-                
                 if (textoProvisorio.trim()) {
                     transcricaoFinal = textoProvisorio.trim();
                     atualizarFeedbackVisual();
@@ -305,18 +275,7 @@
             };
             
             recognition.onerror = (event) => {
-                console.error("Erro:", event.error);
-                let mensagemErro = "";
-                switch(event.error) {
-                    case 'not-allowed':
-                        mensagemErro = "❌ Permissão do microfone negada.";
-                        break;
-                    case 'no-speech':
-                        mensagemErro = "🎤 Nenhum discurso detectado.";
-                        break;
-                    default:
-                        mensagemErro = `Erro: ${event.error}`;
-                }
+                let mensagemErro = event.error === 'not-allowed' ? "❌ Permissão do microfone negada." : "🎤 Erro no microfone. Tente novamente.";
                 alert(mensagemErro);
                 pararLeitura();
             };
@@ -352,10 +311,8 @@
         function iniciarMonitoramentoSilencio() {
             silencioTimeout = setInterval(() => {
                 const tempoSilencio = Date.now() - ultimoResultadoTempo;
-                if (tempoSilencio > SILENCIO_MAXIMO_MS && transcricaoFinal.length > 0) {
+                if (tempoSilencio > SILENCIO_MAXIMO_MS) {
                     document.getElementById('indicadorSilencio').innerHTML = "⚠️ Silêncio detectado - Continue a leitura...";
-                } else if (tempoSilencio > SILENCIO_MAXIMO_MS) {
-                    document.getElementById('indicadorSilencio').innerHTML = "🎤 Comece a ler o texto...";
                 } else {
                     document.getElementById('indicadorSilencio').innerHTML = "🎤 Leitura em andamento...";
                 }
@@ -369,7 +326,6 @@
                 const minutos = Math.floor(segundosDecorridos / 60);
                 const segundos = segundosDecorridos % 60;
                 document.getElementById('timer').innerText = `${minutos.toString().padStart(2,'0')}:${segundos.toString().padStart(2,'0')}`;
-                
                 if (segundosDecorridos >= TEMPO_MAXIMO_SEGUNDOS - 10) {
                     document.getElementById('timer').style.color = '#f56565';
                 }
@@ -389,10 +345,7 @@
             if (timerInterval) clearInterval(timerInterval);
             if (timeoutId) clearTimeout(timeoutId);
             if (silencioTimeout) clearInterval(silencioTimeout);
-            
-            if (recognition) {
-                try { recognition.stop(); } catch(e) {}
-            }
+            if (recognition) { try { recognition.stop(); } catch(e) {} }
             
             const tempoTotalSegundos = (Date.now() - tempoInicio) / 1000;
             processarResultado(tempoTotalSegundos);
@@ -404,7 +357,6 @@
             
             let acertos = 0;
             const minLen = Math.min(original.length, aluno.length);
-            
             for (let i = 0; i < minLen; i++) {
                 if (original[i] === aluno[i]) acertos++;
             }
@@ -419,17 +371,16 @@
             else nivel = "🌱 Inicial";
             
             const resultadoHTML = TEXTO_BASE.split(' ').map((palavra, idx) => {
-                const pLimpa = palavra.toLowerCase().replace(/[.,!?;]/g, "");
                 const alunoIdx = idx < aluno.length ? aluno[idx] : null;
-                const isCorreto = alunoIdx === pLimpa;
+                const isCorreto = alunoIdx === palavra.toLowerCase().replace(/[.,!?;]/g, "");
                 return `<span class="palavra ${isCorreto ? 'correto' : 'erro'}">${palavra}</span>`;
-            }).join('') + '<div style="margin-top:15px;font-size:14px;"><span style="color:#48bb78;">✅ Verde = Correta</span> | <span style="color:#f56565;">🔴 Vermelho = Não reconhecida</span></div>';
+            }).join('');
             
             document.getElementById('resPPM').innerText = ppm;
             document.getElementById('resPrecisao').innerText = precisao;
             document.getElementById('resTempo').innerText = Math.round(segundos);
             document.getElementById('resNivel').innerHTML = nivel;
-            document.getElementById('resultadoVisual').innerHTML = resultadoHTML;
+            document.getElementById('resultadoVisual').innerHTML = resultadoHTML + '<div style="margin-top:15px;font-size:14px;"><span style="color:#48bb78;">✅ Verde = Correta</span> | <span style="color:#f56565;">🔴 Vermelho = Não reconhecida</span></div>';
             
             document.getElementById('telaGravacao').classList.add('hidden');
             document.getElementById('telaFinal').classList.remove('hidden');
@@ -446,7 +397,7 @@
                 aluno_id: ALUNO_ID || null,
                 turma_id: TURMA_ID || null,
                 jogo_id: JOGO_ID || null,
-                atividade_id: ATIVIDADE_ID,
+                atividade_id: ATIVIDADE_ID || null,
                 ppm: ppm,
                 nivel_proficiencia: nivel.replace(/[🏆📘📖🌱]/g, '').trim(),
                 texto_avaliacao: TEXTO_BASE.substring(0, 500),
@@ -458,16 +409,13 @@
                 habilidade_bncc: "EF35LP01"
             };
             
-            console.log("💾 Salvando resultado:", dados);
-            
             try {
                 const response = await fetch(`${SUPABASE_URL}/rest/v1/resultados`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'apikey': SUPABASE_KEY,
-                        'Authorization': `Bearer ${SUPABASE_KEY}`,
-                        'Prefer': 'return=minimal'
+                        'Authorization': `Bearer ${SUPABASE_KEY}`
                     },
                     body: JSON.stringify(dados)
                 });
@@ -480,25 +428,16 @@
                 }
             } catch (error) {
                 console.error("Erro ao salvar:", error);
-                statusDiv.innerHTML = `⚠️ Erro ao salvar: ${error.message}`;
+                statusDiv.innerHTML = `⚠️ Salvando localmente: ${error.message}`;
                 statusDiv.className = 'alerta';
-                
-                // Fallback localStorage
-                const local = JSON.parse(localStorage.getItem('saci_sabido_resultados_fluencia') || '[]');
-                local.push({...dados, data_fallback: new Date().toISOString()});
-                localStorage.setItem('saci_sabido_resultados_fluencia', JSON.stringify(local));
+                localStorage.setItem('saci_sabido_resultado_fallback', JSON.stringify(dados));
             }
         }
         
         function fecharJanela() {
-            try {
-                window.close();
-            } catch(e) {
-                alert("Feche esta aba para voltar ao Saci Sabido.");
-            }
+            try { window.close(); } catch(e) { alert("Feche esta aba para voltar."); }
         }
 
-        // Inicializar
         carregarAluno();
         carregarAtividade();
     </script>
