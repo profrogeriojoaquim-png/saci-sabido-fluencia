@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Saci Sabido - Avaliação de Fluência Leitora</title>
+    <title>Saci Sabido - Sequência Numérica</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #4c51bf 0%, #6b46c1 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             display: flex;
             justify-content: center;
@@ -19,490 +19,740 @@
             background: white;
             border-radius: 30px;
             padding: 30px;
-            max-width: 900px;
+            max-width: 800px;
             width: 100%;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             text-align: center;
         }
-        .texto-leitura {
-            font-size: 24px;
-            line-height: 1.6;
-            color: #2d3748;
-            background: #f7fafc;
-            padding: 30px;
-            border-radius: 20px;
-            margin: 20px 0;
-            text-align: left;
-            border: 2px solid #edf2f7;
-            min-height: 200px;
-            max-height: 400px;
-            overflow-y: auto;
-        }
-        .palavra { display: inline-block; margin-right: 8px; transition: all 0.3s; }
-        .correto { color: #48bb78; font-weight: bold; background: #f0fff4; border-radius: 8px; padding: 0 4px; }
-        .erro { color: #f56565; text-decoration: underline wavy; background: #fff5f5; border-radius: 8px; padding: 0 4px; }
-        
+        h1 { color: #333; margin-bottom: 15px; font-size: 28px; }
         button {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
-            padding: 15px 30px;
-            font-size: 18px;
+            padding: 12px 24px;
+            font-size: 16px;
             font-weight: bold;
             border-radius: 50px;
             cursor: pointer;
-            transition: all 0.2s;
-            margin: 5px;
+            margin-top: 15px;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
-        button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        button:hover { transform: scale(1.02); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
         button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-        
-        .btn-gravando { background: #f56565; animation: pulse-red 1.5s infinite; }
-        @keyframes pulse-red { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
-        
+        .btn-secundario { background: #718096; }
+        .btn-voltar { background: #48bb78; }
+        .hidden { display: none; }
+        .pergunta {
+            font-size: 36px;
+            font-weight: bold;
+            margin: 20px 0;
+            color: #333;
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 20px;
+            font-family: monospace;
+        }
+        .opcoes {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .opcao {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 20px;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        .opcao:hover { background: #e0e0e0; transform: scale(1.02); }
+        .correto { background: #48bb78 !important; color: white; animation: pulse 0.5s; }
+        .errado { background: #f56565 !important; color: white; animation: shake 0.5s; }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+        .info {
+            display: flex;
+            justify-content: space-between;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .info-item { background: white; padding: 6px 12px; border-radius: 20px; font-weight: bold; }
+        .progresso {
+            width: 100%;
+            background: #e0e0e0;
+            border-radius: 10px;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+        .progresso-bar {
+            height: 12px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.3s;
+        }
+        .feedback {
+            margin-top: 15px;
+            font-size: 16px;
+            font-weight: bold;
+            padding: 12px;
+            border-radius: 10px;
+        }
+        .feedback-info { background: #e0f2fe; color: #075985; }
+        .timer { font-size: 22px; font-weight: bold; color: #667eea; }
+        .icone-som {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: white;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            font-size: 24px;
+        }
+        .relatorio-erros {
+            background: #fff5f5;
+            border: 1px solid #feb2b2;
+            border-radius: 15px;
+            padding: 15px;
+            margin: 20px 0;
+            text-align: left;
+            max-height: 300px;
+            overflow-y: auto;
+        }
         .estatisticas {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 15px;
             margin: 20px 0;
         }
-        .card-metrica { background: #f8f9fa; padding: 15px; border-radius: 15px; }
-        .hidden { display: none; }
-        .boas-vindas { background: #edf2f7; padding: 20px; border-radius: 20px; margin-bottom: 20px; }
-        .alerta { background: #fed7d7; color: #c53030; padding: 10px; border-radius: 10px; margin: 10px 0; }
-        .sucesso { background: #c6f6d5; color: #22543d; padding: 10px; border-radius: 10px; margin: 10px 0; }
-        .info { background: #bee3f8; color: #2c5282; padding: 10px; border-radius: 10px; margin: 10px 0; }
-        .timer { font-size: 24px; color: #667eea; font-weight: bold; font-family: monospace; }
-        .indicador-silencio { font-size: 14px; color: #718096; margin-top: 10px; }
-        .loading { display: inline-block; width: 16px; height: 16px; border: 2px solid #fff; border-radius: 50%; border-top-color: transparent; animation: spin 0.6s linear infinite; margin-right: 8px; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        
+        .estatistica-card { background: #f8f9fa; padding: 15px; border-radius: 15px; }
+        .ranking-container {
+            background: linear-gradient(135deg, #667eea20 0%, #764ba220 100%);
+            border-radius: 15px;
+            padding: 15px;
+            margin: 15px 0;
+            text-align: center;
+        }
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 30px;
+            padding: 30px;
+            text-align: center;
+            animation: bounceIn 0.5s;
+            max-width: 350px;
+        }
+        @keyframes bounceIn {
+            0% { transform: scale(0.3); opacity: 0; }
+            50% { transform: scale(1.05); }
+            70% { transform: scale(0.9); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .boas-vindas {
+            background: linear-gradient(135deg, #667eea20 0%, #764ba220 100%);
+            border-radius: 20px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .revisao-item {
+            background: #fff5f5;
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        .btn-dica {
+            background: #f59e0b;
+            font-size: 14px;
+            padding: 8px 16px;
+            margin: 5px;
+        }
+        .btn-dica:disabled { background: #b0b0b0; }
         @media (max-width: 600px) {
             .container { padding: 20px; }
-            .texto-leitura { font-size: 18px; padding: 20px; }
-            .estatisticas { grid-template-columns: 1fr; }
+            .pergunta { font-size: 28px; padding: 20px; }
+            .opcao { padding: 12px; font-size: 16px; }
+            .info-item { font-size: 12px; }
         }
     </style>
 </head>
 <body>
-
+    <div class="icone-som" onclick="alternarSom()" id="somIcone">🔊</div>
     <div class="container">
-        <!-- TELA INICIAL (CARREGAMENTO) -->
         <div id="telaInicial">
-            <div class="boas-vindas">
-                <h2>📖 Avaliação de Fluência Leitora</h2>
-                <div id="infoAluno"></div>
-                <div id="infoAtividade"></div>
+            <div id="boasVindas" class="boas-vindas">
+                <h2 id="mensagemBoasVindas">🧩 Sequência Numérica</h2>
+                <div id="infoEscolaTurma" class="escola-info"></div>
+                <p id="statusConexao"></p>
             </div>
-            <div id="loadingTexto" class="info">
-                <span class="loading"></span> Carregando atividade...
-            </div>
-            <div id="conteudoAtividade" class="hidden">
-                <p>📌 <strong>Instruções:</strong> Leia o texto em voz alta com calma e clareza.</p>
-                <div class="texto-leitura" id="previewTexto"></div>
-                <button id="btnIniciar" onclick="iniciarLeitura()">🎙️ INICIAR LEITURA</button>
+            <p>Descubra a lógica por trás de cada sequência!</p>
+            <p>4 módulos • 24 questões • sistema de revisão de aprendizagem</p>
+            <div class="botoes-container">
+                <button id="btnIniciar" onclick="iniciarJogo()" disabled>▶ INICIAR ATIVIDADE</button>
+                <button onclick="voltarParaAtividades()" class="btn-voltar">← VOLTAR AO SISTEMA</button>
             </div>
         </div>
 
-        <!-- TELA GRAVAÇÃO -->
-        <div id="telaGravacao" class="hidden">
-            <div class="timer" id="timer">00:00</div>
-            <div class="texto-leitura" id="textoAtivo"></div>
-            <button id="btnParar" class="btn-gravando" onclick="pararLeitura()">⏹️ FINALIZAR AGORA</button>
-            <div class="indicador-silencio" id="indicadorSilencio"></div>
-            <p style="margin-top: 15px; color: #718096;">🎤 O sistema está analisando sua voz em tempo real...</p>
-            <p style="font-size: 12px; color: #a0aec0;">⏱️ Tempo máximo: 2 minutos</p>
+        <div id="telaJogo" class="hidden">
+            <div class="info">
+                <span class="info-item" id="nivelTexto">Módulo 1</span>
+                <span class="info-item timer" id="timer">00:00</span>
+                <span class="info-item" id="pontuacaoTexto">⭐ Acertos: 0</span>
+                <span class="info-item" id="errosTexto">❌ Erros: 0</span>
+            </div>
+            <div class="progresso"><div class="progresso-bar" id="progressoBar"></div></div>
+            <div class="pergunta" id="pergunta"></div>
+            <div class="opcoes" id="opcoes"></div>
+            <div class="feedback hidden" id="feedback"></div>
+            <div class="botoes-container">
+                <button onclick="sairJogo()" class="btn-secundario" style="background: #e53e3e;">🚪 ENCERRAR SESSÃO</button>
+            </div>
         </div>
 
-        <!-- TELA FINAL -->
+        <div id="telaRevisao" class="hidden">
+            <h1>📚 REVISÃO DE APRENDIZAGEM</h1>
+            <p id="msgRevisao"></p>
+            <div id="revisaoContainer" class="relatorio-erros"></div>
+            <div class="botoes-container">
+                <button id="btnProximoRevisao" onclick="proximoItemRevisao()" disabled>▶ PRÓXIMO</button>
+                <button onclick="sairJogo()" class="btn-secundario" style="background: #e53e3e;">🚪 ENCERRAR SESSÃO</button>
+            </div>
+        </div>
+
         <div id="telaFinal" class="hidden">
-            <h1>📊 Resultado da Proficiência</h1>
+            <h1>📊 Análise de Proficiência Concluída!</h1>
             <div class="estatisticas">
-                <div class="card-metrica"><h3>⏱️ Velocidade</h3><p><strong id="resPPM">0</strong> <span style="font-size: 14px;">palavras/minuto</span></p></div>
-                <div class="card-metrica"><h3>🎯 Precisão</h3><p><strong id="resPrecisao">0%</strong> <span style="font-size: 14px;">de acertos</span></p></div>
-                <div class="card-metrica"><h3>⏰ Tempo total</h3><p><strong id="resTempo">0</strong> <span style="font-size: 14px;">segundos</span></p></div>
-                <div class="card-metrica"><h3>📝 Nível</h3><p><strong id="resNivel">-</strong></p></div>
+                <div class="estatistica-card"><h3>📊</h3><p><strong id="resultadoFinalAcertos"></strong></p><p>Acertos</p></div>
+                <div class="estatistica-card"><h3>⏱️</h3><p><strong id="resultadoFinalTempo"></strong></p><p>Tempo Total</p></div>
+                <div class="estatistica-card"><h3>❌</h3><p><strong id="resultadoFinalErros"></strong></p><p>Erros</p></div>
+                <div class="estatistica-card"><h3>🎯</h3><p><strong id="resultadoFinalPorcentagem"></strong></p><p>Aproveitamento</p></div>
             </div>
-            <div class="texto-leitura" id="resultadoVisual"></div>
-            <div id="statusSalvamento" style="margin: 10px 0; font-size: 14px;"></div>
-            <button onclick="fecharJanela()">✅ Concluir</button>
+            <div id="rankingContainer" class="ranking-container hidden">
+                <div class="ranking-texto">🏆 Posição na turma (melhor desempenho)</div>
+                <div class="ranking-destaque" id="rankingPosicao">--</div>
+                <div class="ranking-texto" id="rankingTotal">entre -- estudantes</div>
+            </div>
+            <div id="msgSalvoContainer"></div>
+            <div class="relatorio-erros" id="relatorioErrosFinal">
+                <h4>📝 Questões que merecem intervenção pedagógica:</h4>
+                <ul id="listaErrosFinal"></ul>
+            </div>
+            <div class="botoes-container">
+                <button onclick="reiniciar()">🔄 Refazer Atividade</button>
+                <button onclick="voltarTelaInicial()" class="btn-secundario">🏠 Menu Principal</button>
+                <button onclick="voltarParaAtividades()" class="btn-voltar">← VOLTAR AO SISTEMA</button>
+            </div>
         </div>
     </div>
 
     <script>
-        // ============================================
-        // CONFIGURAÇÕES DO SUPABASE
-        // ============================================
+        // ======================== CONEXÃO SUPABASE ========================
         const SUPABASE_URL = 'https://qmcqffnawtfaenyziwsn.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFtY3FmZm5hd3RmYWVueXppd3NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxNTM5NTMsImV4cCI6MjA4OTcyOTk1M30._CjaNoeJeQp-8s8Jt-dk3bJfktdEV97R5LhLnWgYrNc';
+
+        // ======================== ÁUDIO ========================
+        let somAtivado = true;
+        let audioCtx = null;
+        function tocarSom(tipo) {
+            if (!somAtivado) return;
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const now = audioCtx.currentTime;
+            const gain = audioCtx.createGain();
+            gain.connect(audioCtx.destination);
+            const osc = audioCtx.createOscillator();
+            osc.connect(gain);
+            osc.type = 'sine';
+            if (tipo === 'acerto') {
+                osc.frequency.value = 880;
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.5);
+                osc.start(now);
+                osc.stop(now + 0.3);
+            } else if (tipo === 'erro') {
+                osc.frequency.value = 220;
+                gain.gain.setValueAtTime(0.25, now);
+                gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.4);
+                osc.start(now);
+                osc.stop(now + 0.25);
+            } else if (tipo === 'vitoria') {
+                [523.25, 659.25, 783.99].forEach((freq, i) => {
+                    const o = audioCtx.createOscillator();
+                    const g = audioCtx.createGain();
+                    o.connect(g);
+                    g.connect(audioCtx.destination);
+                    o.frequency.value = freq;
+                    g.gain.setValueAtTime(0.15, now + i * 0.1);
+                    g.gain.exponentialRampToValueAtTime(0.0001, now + i * 0.1 + 0.8);
+                    o.start(now + i * 0.1);
+                    o.stop(now + i * 0.1 + 0.6);
+                });
+            }
+        }
+        function alternarSom() { somAtivado = !somAtivado; document.getElementById('somIcone').innerHTML = somAtivado ? '🔊' : '🔇'; }
         
-        // ============================================
-        
+        function voltarParaAtividades() {
+            window.close();
+            if (document.referrer) window.location.href = document.referrer;
+            else alert("Feche esta aba para voltar ao sistema.");
+        }
+
+        // ======================== PARÂMETROS DA URL ========================
         const urlParams = new URLSearchParams(window.location.search);
-        const ATIVIDADE_ID = urlParams.get('atividade_id');
         const ALUNO_ID = urlParams.get('aluno_id');
-        const TURMA_ID = urlParams.get('turma_id');
         const JOGO_ID = urlParams.get('jogo_id');
+        const TURMA_ID = urlParams.get('turma_id');
+        const HABILIDADE_BNCC = urlParams.get('bncc') || 'EF07MA14';
+        const MODO_TESTE = urlParams.get('modo_teste') === 'true';
         
-        let TEXTO_BASE = "";
-        let NOME_ATIVIDADE = "";
-        let NOME_ALUNO = "";
-        let recognition;
-        let tempoInicio;
-        let timerInterval;
-        let timeoutId;
-        let transcricaoFinal = "";
-        let silencioTimeout;
-        let ultimoResultadoTempo = Date.now();
-        
-        const TEMPO_MAXIMO_SEGUNDOS = 120;
-        const SILENCIO_MAXIMO_MS = 5000;
+        let nomeAluno = "Estudante";
+        let nomeEscola = "";
+        let codigoTurma = "";
 
-        // ============================================
-        // CARREGAR DADOS DO ALUNO
-        // ============================================
-        async function carregarAluno() {
-            if (!ALUNO_ID) return;
-            
-            try {
-                const response = await fetch(
-                    `${SUPABASE_URL}/rest/v1/alunos?id=eq.${ALUNO_ID}&select=nome_aluno`,
-                    {
-                        headers: {
-                            'apikey': SUPABASE_KEY,
-                            'Authorization': `Bearer ${SUPABASE_KEY}`
-                        }
-                    }
-                );
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data && data.length > 0) {
-                        NOME_ALUNO = data[0].nome_aluno;
-                        document.getElementById('infoAluno').innerHTML = `
-                            <strong>👤 Estudante:</strong> ${NOME_ALUNO?.toLowerCase() || ALUNO_ID.substring(0, 8)}<br>
-                            ${TURMA_ID ? `<strong>🏫 Turma ID:</strong> ${TURMA_ID.substring(0, 8)}...` : ''}
-                        `;
-                    }
-                }
-            } catch (error) {
-                console.error('Erro ao buscar aluno:', error);
-                document.getElementById('infoAluno').innerHTML = `<strong>👤 Aluno ID:</strong> ${ALUNO_ID.substring(0, 8)}...`;
+        const btnIniciar = document.getElementById('btnIniciar');
+        const infoDiv = document.getElementById('infoEscolaTurma');
+
+        async function carregarDadosPersonalizados() {
+            // MODO TESTE: libera o botão sem buscar dados do banco
+            if (MODO_TESTE) {
+                document.getElementById('mensagemBoasVindas').innerHTML = `🧩 Modo Demonstração - Admin`;
+                infoDiv.innerHTML = `🔧 Modo de teste • Admin`;
+                btnIniciar.disabled = false;
+                return;
             }
-        }
-
-        // ============================================
-        // CARREGAR ATIVIDADE DO SUPABASE
-        // ============================================
-        async function carregarAtividade() {
-            if (!ATIVIDADE_ID) {
-                document.getElementById('infoAtividade').innerHTML = `
-                    <div class="alerta">
-                        ❌ <strong>Erro:</strong> Nenhuma atividade identificada.<br>
-                        <small>Use o link fornecido pelo professor.</small>
-                    </div>
-                `;
-                document.getElementById('loadingTexto').classList.add('hidden');
+            
+            if (!ALUNO_ID || !TURMA_ID) {
+                document.getElementById('statusConexao').innerHTML = "⚠️ Link inválido! Parâmetros ausentes.";
+                btnIniciar.disabled = true;
                 return;
             }
             
             try {
-                const response = await fetch(
-                    `${SUPABASE_URL}/rest/v1/atividades_fluencia?id=eq.${ATIVIDADE_ID}&select=*`,
-                    {
-                        headers: {
-                            'apikey': SUPABASE_KEY,
-                            'Authorization': `Bearer ${SUPABASE_KEY}`
-                        }
-                    }
-                );
-                
-                if (!response.ok) throw new Error('Erro ao buscar atividade');
-                
-                const data = await response.json();
-                
-                if (!data || data.length === 0) {
-                    throw new Error('Atividade não encontrada');
+                const { data: alunoData } = await supabase.from('alunos').select('nome_aluno, turma_id').eq('id', ALUNO_ID).maybeSingle();
+                if (alunoData?.nome_aluno) nomeAluno = alunoData.nome_aluno;
+                const { data: turmaData } = await supabase.from('turmas').select('codigo, escola_id').eq('id', TURMA_ID).maybeSingle();
+                if (turmaData) {
+                    codigoTurma = turmaData.codigo || "Turma";
+                    const { data: escolaData } = await supabase.from('escolas').select('nome').eq('id', turmaData.escola_id).maybeSingle();
+                    if (escolaData?.nome) nomeEscola = escolaData.nome;
                 }
-                
-                const atividade = data[0];
-                TEXTO_BASE = atividade.texto_avaliacao;
-                NOME_ATIVIDADE = atividade.titulo;
-                
-                document.getElementById('infoAtividade').innerHTML = `
-                    <strong>📝 Atividade:</strong> ${NOME_ATIVIDADE}
-                `;
-                document.getElementById('previewTexto').innerHTML = TEXTO_BASE;
-                document.getElementById('previewTexto').style.fontSize = TEXTO_BASE.length > 300 ? "18px" : "24px";
-                
-                document.getElementById('loadingTexto').classList.add('hidden');
-                document.getElementById('conteudoAtividade').classList.remove('hidden');
-                
-            } catch (error) {
-                console.error('Erro:', error);
-                document.getElementById('infoAtividade').innerHTML = `
-                    <div class="alerta">
-                        ❌ <strong>Erro ao carregar atividade:</strong><br>
-                        <small>${error.message}</small>
-                    </div>
-                `;
-                document.getElementById('loadingTexto').classList.add('hidden');
+                let textoInfo = "";
+                if (nomeEscola) textoInfo += `🏫 ${nomeEscola}`;
+                if (codigoTurma) textoInfo += ` • 🧑‍🏫 Turma: ${codigoTurma}`;
+                if (nomeAluno) textoInfo += ` • 👤 ${nomeAluno}`;
+                if (textoInfo) infoDiv.innerHTML = textoInfo;
+                document.getElementById('mensagemBoasVindas').innerHTML = `🧩 Olá, ${nomeAluno}! Vamos desenvolver sua proficiência?`;
+                btnIniciar.disabled = false;
+            } catch(e) {
+                console.log(e);
+                document.getElementById('mensagemBoasVindas').innerHTML = `🧩 Sequência Numérica`;
+                btnIniciar.disabled = false;
             }
         }
 
-        function iniciarLeitura() {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRecognition) {
-                alert("❌ Seu navegador não suporta reconhecimento de voz.\n\n✅ Use Google Chrome, Microsoft Edge ou Opera.");
-                return;
+        // ======================== DADOS DOS NÍVEIS ========================
+        const niveis = [
+            { // Módulo 1
+                perguntas: [
+                    { texto: "2, 4, 6, ?", opcoes: ["7","8","9","10"], correta: "8", dica1: "Observe a diferença entre os números", dica2: "A diferença é sempre a mesma", dica3: "Está aumentando de 2 em 2", explicacao: "Os números aumentam de 2 em 2: 2+2=4, 4+2=6, então 6+2=8" },
+                    { texto: "5, 10, 15, ?", opcoes: ["18","20","25","30"], correta: "20", dica1: "Qual a relação entre 5 e 10?", dica2: "Está somando sempre o mesmo número", dica3: "5+5=10, 10+5=15, então 15+5=20", explicacao: "Some 5 a cada termo" },
+                    { texto: "10, 20, 30, ?", opcoes: ["35","40","45","50"], correta: "40", dica1: "São múltiplos de 10", dica2: "Aumenta de 10 em 10", dica3: "10+10=20, 20+10=30, então 30+10=40", explicacao: "Some 10 a cada termo" },
+                    { texto: "1, 3, 5, ?", opcoes: ["6","7","8","9"], correta: "7", dica1: "São números ímpares", dica2: "Pule um número entre eles", dica3: "1+2=3, 3+2=5, então 5+2=7", explicacao: "Números ímpares consecutivos" },
+                    { texto: "0, 4, 8, ?", opcoes: ["10","12","14","16"], correta: "12", dica1: "Diferença entre 0 e 4?", dica2: "Some 4", dica3: "0+4=4, 4+4=8, então 8+4=12", explicacao: "Some 4 a cada termo" },
+                    { texto: "11, 22, 33, ?", opcoes: ["40","44","55","34"], correta: "44", dica1: "Múltiplos de 11", dica2: "Some 11", dica3: "11+11=22, 22+11=33, então 33+11=44", explicacao: "Some 11 a cada termo" }
+                ]
+            },
+            { // Módulo 2
+                perguntas: [
+                    { texto: "20, 18, 16, ?", opcoes: ["15","14","13","12"], correta: "14", dica1: "Os números estão diminuindo", dica2: "Diminui de 2 em 2", dica3: "20-2=18, 18-2=16, então 16-2=14", explicacao: "Subtraia 2 a cada termo" },
+                    { texto: "3, 6, 9, ?", opcoes: ["10","12","14","15"], correta: "12", dica1: "Múltiplos de 3", dica2: "Some 3", dica3: "3+3=6, 6+3=9, então 9+3=12", explicacao: "Some 3 a cada termo" },
+                    { texto: "100, 90, 80, ?", opcoes: ["70","60","50","40"], correta: "70", dica1: "Diminuindo", dica2: "Subtraia 10", dica3: "100-10=90, 90-10=80, então 80-10=70", explicacao: "Subtraia 10 a cada termo" },
+                    { texto: "1, 5, 9, ?", opcoes: ["12","13","14","15"], correta: "13", dica1: "Diferença entre 1 e 5?", dica2: "Some 4", dica3: "1+4=5, 5+4=9, então 9+4=13", explicacao: "Some 4 a cada termo" },
+                    { texto: "50, 45, 40, ?", opcoes: ["35","30","25","20"], correta: "35", dica1: "Diminui sempre do mesmo valor", dica2: "Subtraia 5", dica3: "50-5=45, 45-5=40, então 40-5=35", explicacao: "Subtraia 5 a cada termo" },
+                    { texto: "2, 5, 8, ?", opcoes: ["10","11","12","13"], correta: "11", dica1: "Diferença entre 2 e 5?", dica2: "Some 3", dica3: "2+3=5, 5+3=8, então 8+3=11", explicacao: "Some 3 a cada termo" }
+                ]
+            },
+            { // Módulo 3
+                perguntas: [
+                    { texto: "1, 2, 4, ?", opcoes: ["6","8","10","12"], correta: "8", dica1: "O que acontece entre 1 e 2?", dica2: "Multiplica por 2", dica3: "1×2=2, 2×2=4, então 4×2=8", explicacao: "Dobre o valor" },
+                    { texto: "10, 100, 1000, ?", opcoes: ["1010","2000","10000","5000"], correta: "10000", dica1: "Observe os zeros", dica2: "Multiplica por 10", dica3: "10×10=100, 100×10=1000, então 1000×10=10000", explicacao: "Multiplique por 10" },
+                    { texto: "3, 6, 12, ?", opcoes: ["18","24","30","36"], correta: "24", dica1: "Relação entre 3 e 6?", dica2: "Dobra", dica3: "3×2=6, 6×2=12, então 12×2=24", explicacao: "Multiplique por 2" },
+                    { texto: "5, 25, 125, ?", opcoes: ["150","250","625","500"], correta: "625", dica1: "5, 25, 125...", dica2: "Multiplica por 5", dica3: "5×5=25, 25×5=125, então 125×5=625", explicacao: "Multiplique por 5" },
+                    { texto: "2, 6, 18, ?", opcoes: ["24","36","54","72"], correta: "54", dica1: "Relaciona 2 e 6?", dica2: "Multiplica por 3", dica3: "2×3=6, 6×3=18, então 18×3=54", explicacao: "Multiplique por 3" },
+                    { texto: "1, 4, 16, ?", opcoes: ["32","48","64","100"], correta: "64", dica1: "1, 4, 16...", dica2: "Multiplica por 4", dica3: "1×4=4, 4×4=16, então 16×4=64", explicacao: "Multiplique por 4" }
+                ]
+            },
+            { // Módulo 4
+                perguntas: [
+                    { texto: "1, 1, 2, 3, ?", opcoes: ["4","5","6","7"], correta: "5", dica1: "Cada número depende dos anteriores", dica2: "Some os dois últimos", dica3: "1+1=2, 1+2=3, então 2+3=5", explicacao: "Sequência de Fibonacci" },
+                    { texto: "1, 4, 9, ?", opcoes: ["12","15","16","20"], correta: "16", dica1: "1, 4, 9... são?", dica2: "Quadrados perfeitos", dica3: "1²=1, 2²=4, 3²=9, então 4²=16", explicacao: "Quadrado dos números naturais" },
+                    { texto: "0, 1, 3, 6, ?", opcoes: ["8","9","10","11"], correta: "10", dica1: "Diferenças: 1,2,3...", dica2: "Some +1, +2, +3, +4", dica3: "0+1=1, 1+2=3, 3+3=6, então 6+4=10", explicacao: "Adicione +1, +2, +3, +4" },
+                    { texto: "2, 3, 5, 8, ?", opcoes: ["10","12","13","15"], correta: "13", dica1: "Cada número depende dos anteriores", dica2: "Soma dos dois anteriores", dica3: "2+3=5, 3+5=8, então 5+8=13", explicacao: "Outra Fibonacci" },
+                    { texto: "100, 81, 64, ?", opcoes: ["50","49","40","36"], correta: "49", dica1: "100, 81, 64...", dica2: "Quadrados perfeitos decrescentes", dica3: "10²=100, 9²=81, 8²=64, então 7²=49", explicacao: "Quadrados perfeitos decrescentes" },
+                    { texto: "2, 4, 16, ?", opcoes: ["32","64","256","512"], correta: "256", dica1: "Relação 2 e 4?", dica2: "Eleva ao quadrado", dica3: "2²=4, 4²=16, então 16²=256", explicacao: "Cada termo é o quadrado do anterior" }
+                ]
             }
+        ];
 
-            if (!TEXTO_BASE) {
-                alert("❌ Texto não carregado. Tente novamente.");
-                return;
-            }
+        // ======================== ESTADO DO JOGO ========================
+        let nivelAtual = 0, perguntaAtual = 0, acertos = 0, erros = 0;
+        let listaErros = [], detalhesErros = [], tentativasPorQuestao = {};
+        let tempoTotal = 0, timerInterval = null;
+        let podeResponder = true;
+        let itensRevisao = [], revisaoIndex = 0, dicasUsadasRevisao = 0;
 
-            recognition = new SpeechRecognition();
-            recognition.lang = 'pt-BR';
-            recognition.continuous = true;
-            recognition.interimResults = true;
-            recognition.maxAlternatives = 1;
-
-            document.getElementById('telaInicial').classList.add('hidden');
-            document.getElementById('telaGravacao').classList.remove('hidden');
-            
-            const container = document.getElementById('textoAtivo');
-            const palavras = TEXTO_BASE.split(' ');
-            container.innerHTML = palavras.map((palavra, idx) => 
-                `<span class="palavra" id="palavra-${idx}">${palavra}</span>`
-            ).join(' ');
-
-            transcricaoFinal = "";
-            tempoInicio = Date.now();
-            ultimoResultadoTempo = Date.now();
-            
-            iniciarTimer();
-            iniciarTimeoutAutomatico();
-            
-            recognition.onstart = () => {
-                document.getElementById('indicadorSilencio').innerHTML = "🎤 Microfone ativo - Comece a ler...";
-                iniciarMonitoramentoSilencio();
-            };
-            
-            recognition.onresult = (event) => {
-                ultimoResultadoTempo = Date.now();
-                let textoProvisorio = "";
-                for (let i = event.resultIndex; i < event.results.length; i++) {
-                    if (event.results[i].isFinal) {
-                        textoProvisorio += event.results[i][0].transcript + " ";
-                    }
-                }
-                
-                if (textoProvisorio.trim()) {
-                    transcricaoFinal = textoProvisorio.trim();
-                    atualizarFeedbackVisual();
-                }
-            };
-            
-            recognition.onerror = (event) => {
-                console.error("Erro:", event.error);
-                let mensagemErro = "";
-                switch(event.error) {
-                    case 'not-allowed':
-                        mensagemErro = "❌ Permissão do microfone negada.";
-                        break;
-                    case 'no-speech':
-                        mensagemErro = "🎤 Nenhum discurso detectado.";
-                        break;
-                    default:
-                        mensagemErro = `Erro: ${event.error}`;
-                }
-                alert(mensagemErro);
-                pararLeitura();
-            };
-            
-            recognition.onend = () => {
-                if (document.getElementById('telaGravacao').classList.contains('hidden') === false) {
-                    pararLeitura();
-                }
-            };
-            
-            recognition.start();
+        function atualizarProgresso() {
+            let total = niveis[nivelAtual].perguntas.length;
+            let perc = (perguntaAtual / total) * 100;
+            document.getElementById('progressoBar').style.width = perc + '%';
         }
+        function atualizarUI() {
+            document.getElementById('pontuacaoTexto').innerHTML = `⭐ ${acertos}`;
+            document.getElementById('errosTexto').innerHTML = `❌ ${erros}`;
+        }
+        function sairJogo() { if (timerInterval) clearInterval(timerInterval); voltarTelaInicial(); }
         
-        function atualizarFeedbackVisual() {
-            const palavrasReconhecidas = transcricaoFinal.toLowerCase().split(' ');
-            const palavrasOriginais = TEXTO_BASE.toLowerCase().split(' ');
-            
-            for (let i = 0; i < palavrasOriginais.length; i++) {
-                const elemento = document.getElementById(`palavra-${i}`);
-                if (elemento) {
-                    const palavraOriginal = palavrasOriginais[i].replace(/[.,!?;]/g, '');
-                    if (palavrasReconhecidas.includes(palavraOriginal)) {
-                        elemento.classList.add('correto');
-                        elemento.classList.remove('erro');
-                    } else {
-                        elemento.classList.add('erro');
-                        elemento.classList.remove('correto');
-                    }
-                }
-            }
-        }
-        
-        function iniciarMonitoramentoSilencio() {
-            silencioTimeout = setInterval(() => {
-                const tempoSilencio = Date.now() - ultimoResultadoTempo;
-                if (tempoSilencio > SILENCIO_MAXIMO_MS && transcricaoFinal.length > 0) {
-                    document.getElementById('indicadorSilencio').innerHTML = "⚠️ Silêncio detectado - Continue a leitura...";
-                } else if (tempoSilencio > SILENCIO_MAXIMO_MS) {
-                    document.getElementById('indicadorSilencio').innerHTML = "🎤 Comece a ler o texto...";
-                } else {
-                    document.getElementById('indicadorSilencio').innerHTML = "🎤 Leitura em andamento...";
-                }
-            }, 1000);
-        }
-
-        function iniciarTimer() {
-            let segundosDecorridos = 0;
-            timerInterval = setInterval(() => {
-                segundosDecorridos++;
-                const minutos = Math.floor(segundosDecorridos / 60);
-                const segundos = segundosDecorridos % 60;
-                document.getElementById('timer').innerText = `${minutos.toString().padStart(2,'0')}:${segundos.toString().padStart(2,'0')}`;
-                
-                if (segundosDecorridos >= TEMPO_MAXIMO_SEGUNDOS - 10) {
-                    document.getElementById('timer').style.color = '#f56565';
-                }
-            }, 1000);
-        }
-        
-        function iniciarTimeoutAutomatico() {
-            timeoutId = setTimeout(() => {
-                if (recognition && document.getElementById('telaGravacao').classList.contains('hidden') === false) {
-                    alert("⏰ Tempo limite de 2 minutos atingido.");
-                    pararLeitura();
-                }
-            }, TEMPO_MAXIMO_SEGUNDOS * 1000);
-        }
-
-        function pararLeitura() {
+        function iniciarJogo() {
+            nivelAtual = 0; perguntaAtual = 0; acertos = 0; erros = 0;
+            listaErros = []; detalhesErros = []; tentativasPorQuestao = {};
+            tempoTotal = 0;
             if (timerInterval) clearInterval(timerInterval);
-            if (timeoutId) clearTimeout(timeoutId);
-            if (silencioTimeout) clearInterval(silencioTimeout);
-            
-            if (recognition) {
-                try { recognition.stop(); } catch(e) {}
+            timerInterval = setInterval(() => {
+                tempoTotal++;
+                let min = Math.floor(tempoTotal/60).toString().padStart(2,'0');
+                let seg = (tempoTotal%60).toString().padStart(2,'0');
+                document.getElementById('timer').innerHTML = `${min}:${seg}`;
+            }, 1000);
+            document.getElementById('telaInicial').classList.add('hidden');
+            document.getElementById('telaJogo').classList.remove('hidden');
+            document.getElementById('telaRevisao').classList.add('hidden');
+            document.getElementById('telaFinal').classList.add('hidden');
+            atualizarUI();
+            carregarPergunta();
+        }
+        
+        function carregarPergunta() {
+            podeResponder = true;
+            document.getElementById('feedback').classList.add('hidden');
+            let pergunta = niveis[nivelAtual].perguntas[perguntaAtual];
+            document.getElementById('nivelTexto').innerHTML = `Módulo ${nivelAtual+1}`;
+            document.getElementById('pergunta').innerHTML = pergunta.texto;
+            let opcoes = [...pergunta.opcoes];
+            for (let i = opcoes.length - 1; i > 0; i--) {
+                let j = Math.floor(Math.random() * (i + 1));
+                [opcoes[i], opcoes[j]] = [opcoes[j], opcoes[i]];
             }
-            
-            const tempoTotalSegundos = (Date.now() - tempoInicio) / 1000;
-            processarResultado(tempoTotalSegundos);
+            let container = document.getElementById('opcoes');
+            container.innerHTML = '';
+            opcoes.forEach(opcao => {
+                let btn = document.createElement('div');
+                btn.className = 'opcao';
+                btn.innerText = opcao;
+                btn.onclick = () => verificarResposta(btn, opcao, pergunta);
+                container.appendChild(btn);
+            });
+            atualizarProgresso();
+        }
+        
+        function verificarResposta(botao, resposta, pergunta) {
+            if (!podeResponder) return;
+            podeResponder = false;
+            let correta = pergunta.correta;
+            let key = `${nivelAtual}-${perguntaAtual}`;
+            if (!tentativasPorQuestao[key]) tentativasPorQuestao[key] = 0;
+            tentativasPorQuestao[key]++;
+            if (resposta === correta) {
+                botao.classList.add('correto');
+                tocarSom('acerto');
+                acertos++;
+                atualizarUI();
+                mostrarFeedback("✅ Correto! Você acertou!", "info");
+                setTimeout(() => proximaPergunta(), 700);
+            } else {
+                botao.classList.add('errado');
+                tocarSom('erro');
+                erros++;
+                atualizarUI();
+                mostrarFeedback("❌ Errado! Não desanime, você terá a chance de revisar.", "info");
+                listaErros.push(pergunta);
+                detalhesErros.push({
+                    nivel: nivelAtual+1,
+                    pergunta: pergunta.texto,
+                    respostaCorreta: correta,
+                    respostaDada: resposta,
+                    tentativas: tentativasPorQuestao[key],
+                    explicacao: pergunta.explicacao,
+                    dica1: pergunta.dica1, dica2: pergunta.dica2, dica3: pergunta.dica3
+                });
+                setTimeout(() => proximaPergunta(), 1200);
+            }
+        }
+        
+        function mostrarFeedback(msg, tipo) {
+            let fb = document.getElementById('feedback');
+            fb.innerHTML = msg;
+            fb.className = `feedback feedback-info`;
+            fb.classList.remove('hidden');
+        }
+        
+        function proximaPergunta() {
+            perguntaAtual++;
+            if (perguntaAtual >= niveis[nivelAtual].perguntas.length) {
+                if (listaErros.length > 0) iniciarRevisao();
+                else {
+                    nivelAtual++;
+                    perguntaAtual = 0;
+                    if (nivelAtual >= niveis.length) finalizarJogo();
+                    else { mostrarModalProximoNivel(); carregarPergunta(); }
+                }
+            } else carregarPergunta();
+        }
+        
+        function mostrarModalProximoNivel() {
+            let modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.innerHTML = `<div class="modal-content"><h2>🎉 Parabéns, ${nomeAluno}!</h2><p>Você concluiu o Módulo ${nivelAtual} sem erros! Avançando...</p><button onclick="this.closest('.modal').remove()">▶ CONTINUAR</button></div>`;
+            document.body.appendChild(modal);
+            return new Promise(resolve => {
+                modal.querySelector('button').onclick = () => { modal.remove(); resolve(); };
+            });
+        }
+        
+        function iniciarRevisao() {
+            if (timerInterval) clearInterval(timerInterval);
+            itensRevisao = [...listaErros];
+            revisaoIndex = 0;
+            dicasUsadasRevisao = 0;
+            document.getElementById('telaJogo').classList.add('hidden');
+            document.getElementById('telaRevisao').classList.remove('hidden');
+            document.getElementById('msgRevisao').innerHTML = `Você errou ${itensRevisao.length} questão(ões). Vamos revisar! Use as dicas para aprender.`;
+            carregarItemRevisao();
+        }
+        
+        function carregarItemRevisao() {
+            if (revisaoIndex >= itensRevisao.length) { finalizarRevisao(); return; }
+            let erro = itensRevisao[revisaoIndex];
+            let container = document.getElementById('revisaoContainer');
+            let btnProximo = document.getElementById('btnProximoRevisao');
+            btnProximo.disabled = true;
+            btnProximo.textContent = "▶ PRÓXIMO";
+            container.innerHTML = `
+                <div class="revisao-item">
+                    <div><strong>Questão ${revisaoIndex+1} de ${itensRevisao.length}</strong></div>
+                    <div style="margin: 10px 0;">${erro.texto}</div>
+                    <div id="revisaoOpcoesDiv" class="opcoes"></div>
+                    <button id="btnDicaRevisao" class="btn-dica">💡 Pedir Dica (3)</button>
+                    <div id="revisaoFeedback" class="feedback hidden"></div>
+                    <div id="respostaFinalRevisao" style="display: none; margin-top: 15px;" class="feedback-info"></div>
+                    <div id="explicacaoFinalRevisao" style="display: none; margin-top: 10px; background:#e0f2fe; padding:10px; border-radius:10px;"></div>
+                </div>
+            `;
+            let opcoes = [...erro.opcoes];
+            for (let i = opcoes.length - 1; i > 0; i--) {
+                let j = Math.floor(Math.random() * (i + 1));
+                [opcoes[i], opcoes[j]] = [opcoes[j], opcoes[i]];
+            }
+            let opcoesDiv = document.getElementById('revisaoOpcoesDiv');
+            opcoesDiv.innerHTML = '';
+            opcoes.forEach(opcao => {
+                let btn = document.createElement('div');
+                btn.className = 'opcao';
+                btn.innerText = opcao;
+                btn.onclick = () => verificarRespostaRevisao(btn, opcao, erro.correta, erro);
+                opcoesDiv.appendChild(btn);
+            });
+            let btnDica = document.getElementById('btnDicaRevisao');
+            btnDica.onclick = () => pedirDicaRevisao(erro);
+            btnDica.disabled = false;
+            btnDica.textContent = `💡 Pedir Dica (${3 - dicasUsadasRevisao})`;
+        }
+        
+        function verificarRespostaRevisao(botao, resposta, correta, erro) {
+            let opcoesDiv = document.getElementById('revisaoOpcoesDiv');
+            let botoes = opcoesDiv.querySelectorAll('.opcao');
+            botoes.forEach(btn => btn.style.pointerEvents = 'none');
+            if (resposta === correta) {
+                botao.classList.add('correto');
+                mostrarFeedbackRevisao("✅ Correto! Bom aprendizado!", "sucesso");
+                document.getElementById('btnProximoRevisao').disabled = false;
+            } else {
+                botao.classList.add('errado');
+                if (dicasUsadasRevisao >= 3) {
+                    document.getElementById('respostaFinalRevisao').innerHTML = `🔍 Resposta correta: ${correta}`;
+                    document.getElementById('respostaFinalRevisao').style.display = 'block';
+                    document.getElementById('explicacaoFinalRevisao').innerHTML = `<strong>Explicação:</strong> ${erro.explicacao}`;
+                    document.getElementById('explicacaoFinalRevisao').style.display = 'block';
+                    document.getElementById('btnProximoRevisao').disabled = false;
+                    mostrarFeedbackRevisao("Dicas esgotadas. Veja a resposta abaixo.", "info");
+                } else {
+                    mostrarFeedbackRevisao(`❌ Errado! Use as dicas disponíveis.`, "erro");
+                    botoes.forEach(btn => btn.style.pointerEvents = 'auto');
+                }
+            }
+        }
+        
+        function pedirDicaRevisao(erro) {
+            if (dicasUsadasRevisao >= 3) { mostrarFeedbackRevisao("Você já usou todas as dicas!", "info"); return; }
+            dicasUsadasRevisao++;
+            let dica = dicasUsadasRevisao === 1 ? erro.dica1 : (dicasUsadasRevisao === 2 ? erro.dica2 : erro.dica3);
+            mostrarFeedbackRevisao(`💡 DICA ${dicasUsadasRevisao}: ${dica}`, "info");
+            if (acertos > 0) acertos--;
+            atualizarUI();
+            let btn = document.getElementById('btnDicaRevisao');
+            if (dicasUsadasRevisao >= 3) { btn.disabled = true; btn.textContent = "💡 Dicas esgotadas"; }
+            else btn.textContent = `💡 Pedir Dica (${3 - dicasUsadasRevisao})`;
+        }
+        
+        function mostrarFeedbackRevisao(msg, tipo) {
+            let fb = document.getElementById('revisaoFeedback');
+            fb.innerHTML = msg;
+            fb.className = `feedback ${tipo === 'sucesso' ? 'feedback-sucesso' : (tipo === 'erro' ? 'feedback-erro' : 'feedback-info')}`;
+            fb.classList.remove('hidden');
+        }
+        
+        function proximoItemRevisao() {
+            revisaoIndex++;
+            if (revisaoIndex >= itensRevisao.length) finalizarRevisao();
+            else { dicasUsadasRevisao = 0; carregarItemRevisao(); }
+        }
+        
+        function finalizarRevisao() {
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                tempoTotal++;
+                let min = Math.floor(tempoTotal/60).toString().padStart(2,'0');
+                let seg = (tempoTotal%60).toString().padStart(2,'0');
+                document.getElementById('timer').innerHTML = `${min}:${seg}`;
+            }, 1000);
+            listaErros = [];
+            nivelAtual++;
+            perguntaAtual = 0;
+            document.getElementById('telaRevisao').classList.add('hidden');
+            if (nivelAtual >= niveis.length) finalizarJogo();
+            else { mostrarModalProximoNivel(); document.getElementById('telaJogo').classList.remove('hidden'); carregarPergunta(); }
         }
 
-        function processarResultado(segundos) {
-            const original = TEXTO_BASE.toLowerCase().replace(/[.,!?;]/g, "").split(' ');
-            const aluno = transcricaoFinal.toLowerCase().replace(/[.,!?;]/g, "").split(' ');
-            
-            let acertos = 0;
-            const minLen = Math.min(original.length, aluno.length);
-            
-            for (let i = 0; i < minLen; i++) {
-                if (original[i] === aluno[i]) acertos++;
-            }
-            
-            const ppm = Math.round((acertos / segundos) * 60);
-            const precisao = Math.round((acertos / original.length) * 100);
-            
-            let nivel = "";
-            if (precisao >= 90 && ppm >= 80) nivel = "🏆 Avançado";
-            else if (precisao >= 70 && ppm >= 50) nivel = "📘 Proficiente";
-            else if (precisao >= 50 && ppm >= 30) nivel = "📖 Em desenvolvimento";
-            else nivel = "🌱 Inicial";
-            
-            const resultadoHTML = TEXTO_BASE.split(' ').map((palavra, idx) => {
-                const pLimpa = palavra.toLowerCase().replace(/[.,!?;]/g, "");
-                const alunoIdx = idx < aluno.length ? aluno[idx] : null;
-                const isCorreto = alunoIdx === pLimpa;
-                return `<span class="palavra ${isCorreto ? 'correto' : 'erro'}">${palavra}</span>`;
-            }).join('') + '<div style="margin-top:15px;font-size:14px;"><span style="color:#48bb78;">✅ Verde = Correta</span> | <span style="color:#f56565;">🔴 Vermelho = Não reconhecida</span></div>';
-            
-            document.getElementById('resPPM').innerText = ppm;
-            document.getElementById('resPrecisao').innerText = precisao;
-            document.getElementById('resTempo').innerText = Math.round(segundos);
-            document.getElementById('resNivel').innerHTML = nivel;
-            document.getElementById('resultadoVisual').innerHTML = resultadoHTML;
-            
-            document.getElementById('telaGravacao').classList.add('hidden');
-            document.getElementById('telaFinal').classList.remove('hidden');
-            
-            salvarResultado(ppm, precisao, segundos, nivel, acertos, original.length - acertos);
-        }
-
-        async function salvarResultado(ppm, precisao, tempo, nivel, acertos, erros) {
-            const statusDiv = document.getElementById('statusSalvamento');
-            statusDiv.innerHTML = '<span class="loading"></span> Salvando resultado...';
-            
-            const dados = {
-                tipo_atividade: "fluencia",
-                aluno_id: ALUNO_ID || null,
-                turma_id: TURMA_ID || null,
-                jogo_id: JOGO_ID || null,
-                atividade_id: ATIVIDADE_ID,
-                ppm: ppm,
-                nivel_proficiencia: nivel.replace(/[🏆📘📖🌱]/g, '').trim(),
-                texto_avaliacao: TEXTO_BASE.substring(0, 500),
-                transcricao_aluno: transcricaoFinal.substring(0, 500),
-                tempo_segundos: Math.round(tempo),
-                acertos: acertos,
-                erros: erros,
-                total_questoes: acertos + erros,
-                habilidade_bncc: "EF01LP01"
-            };
-            
-            console.log("💾 Salvando resultado:", dados);
-            
+        // ======================== RANKING E SALVAMENTO ========================
+        async function buscarMelhorRanking(alunoId, turmaId, acertosAtual, tempoAtual) {
             try {
-                const response = await fetch(`${SUPABASE_URL}/rest/v1/resultados`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'apikey': SUPABASE_KEY,
-                        'Authorization': `Bearer ${SUPABASE_KEY}`,
-                        'Prefer': 'return=minimal'
-                    },
+                let { data: alunoHistorico } = await supabase.from('resultados').select('acertos, tempo_segundos').eq('aluno_id', alunoId).eq('jogo_id', JOGO_ID);
+                let melhorAcerto = acertosAtual, melhorTempo = tempoAtual;
+                if (alunoHistorico) {
+                    for (let reg of alunoHistorico) {
+                        if (reg.acertos > melhorAcerto || (reg.acertos === melhorAcerto && reg.tempo_segundos < melhorTempo)) {
+                            melhorAcerto = reg.acertos;
+                            melhorTempo = reg.tempo_segundos;
+                        }
+                    }
+                }
+                let { data: turmaData } = await supabase.from('resultados').select('aluno_id, acertos, tempo_segundos').eq('turma_id', turmaId).eq('jogo_id', JOGO_ID);
+                let melhoresPorAluno = new Map();
+                if (turmaData) {
+                    for (let reg of turmaData) {
+                        let existing = melhoresPorAluno.get(reg.aluno_id);
+                        if (!existing || reg.acertos > existing.acertos || (reg.acertos === existing.acertos && reg.tempo_segundos < existing.tempo)) {
+                            melhoresPorAluno.set(reg.aluno_id, { acertos: reg.acertos, tempo: reg.tempo_segundos });
+                        }
+                    }
+                }
+                let posicao = 1;
+                for (let [_, value] of melhoresPorAluno.entries()) {
+                    if (value.acertos > melhorAcerto || (value.acertos === melhorAcerto && value.tempo < melhorTempo)) posicao++;
+                }
+                return { posicao, total: melhoresPorAluno.size };
+            } catch(e) { console.error(e); return null; }
+        }
+
+        async function salvarResultado() {
+            if (MODO_TESTE) {
+                mostrarFeedbackSalvo("🔧 Modo demonstração - dados não salvos permanentemente.", "info");
+                return;
+            }
+            if (!ALUNO_ID || !JOGO_ID) { mostrarFeedbackSalvo("⚠️ Modo teste. Dados não salvos.", "erro"); return; }
+            let errosDetalhados = detalhesErros.map(e => ({ nivel: e.nivel, pergunta: e.pergunta, respostaDada: e.respostaDada, respostaCorreta: e.respostaCorreta, tentativas: e.tentativas, explicacao: e.explicacao, dica1: e.dica1, dica2: e.dica2, dica3: e.dica3 }));
+            let dados = {
+                aluno_id: ALUNO_ID, jogo_id: JOGO_ID, turma_id: TURMA_ID || null,
+                acertos: acertos, erros: 24 - acertos, habilidade_bncc: HABILIDADE_BNCC,
+                tempo_segundos: tempoTotal, total_questoes: 24, detalhes_erros: errosDetalhados
+            };
+            try {
+                let resp = await fetch(`${SUPABASE_URL}/rest/v1/resultados`, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` },
                     body: JSON.stringify(dados)
                 });
-                
-                if (response.ok || response.status === 201) {
-                    statusDiv.innerHTML = '✅ Resultado salvo com sucesso!';
-                    statusDiv.className = 'sucesso';
-                } else {
-                    throw new Error(await response.text());
-                }
-            } catch (error) {
-                console.error("Erro ao salvar:", error);
-                statusDiv.innerHTML = `⚠️ Erro ao salvar: ${error.message}`;
-                statusDiv.className = 'alerta';
-                
-                // Fallback localStorage
-                const local = JSON.parse(localStorage.getItem('saci_sabido_resultados_fluencia') || '[]');
-                local.push({...dados, data_fallback: new Date().toISOString()});
-                localStorage.setItem('saci_sabido_resultados_fluencia', JSON.stringify(local));
-            }
+                if (resp.ok) {
+                    mostrarFeedbackSalvo("✅ Dados registrados com sucesso!", "sucesso");
+                    if (TURMA_ID) {
+                        let ranking = await buscarMelhorRanking(ALUNO_ID, TURMA_ID, acertos, tempoTotal);
+                        if (ranking) {
+                            document.getElementById('rankingPosicao').innerHTML = `${ranking.posicao}º`;
+                            document.getElementById('rankingTotal').innerHTML = `entre ${ranking.total} estudantes`;
+                            document.getElementById('rankingContainer').classList.remove('hidden');
+                        }
+                    }
+                } else mostrarFeedbackSalvo("❌ Erro ao registrar.", "erro");
+            } catch(e) { console.error(e); }
         }
         
-        function fecharJanela() {
-            // Tenta fechar a janela (se foi aberta pelo Saci Sabido)
-            try {
-                window.close();
-            } catch(e) {
-                // Se não conseguir, mostra mensagem
-                alert("Feche esta aba para voltar ao Saci Sabido.");
-            }
+        function mostrarFeedbackSalvo(msg, tipo) {
+            let div = document.getElementById('msgSalvoContainer');
+            div.innerHTML = `<div class="msg-salvo" style="background:#48bb78;">${msg}</div>`;
+            setTimeout(() => div.innerHTML = '', 4000);
+        }
+        
+        function finalizarJogo() {
+            if (timerInterval) clearInterval(timerInterval);
+            tocarSom('vitoria');
+            let tMin = Math.floor(tempoTotal/60), tSeg = tempoTotal%60, perc = Math.round(acertos/24*100);
+            document.getElementById('resultadoFinalAcertos').innerHTML = `${acertos}`;
+            document.getElementById('resultadoFinalTempo').innerHTML = `${tMin}min ${tSeg}s`;
+            document.getElementById('resultadoFinalErros').innerHTML = `${24-acertos}`;
+            document.getElementById('resultadoFinalPorcentagem').innerHTML = `${perc}%`;
+            let listaFinal = document.getElementById('listaErrosFinal');
+            listaFinal.innerHTML = '';
+            if (detalhesErros.length === 0) listaFinal.innerHTML = '<li style="color: #48bb78;">🎉 Nenhum erro! Desempenho excelente!</li>';
+            else detalhesErros.forEach(e => {
+                listaFinal.innerHTML += `<li><strong>Módulo ${e.nivel}</strong> - ${e.pergunta}<br>Resposta do estudante: ${e.respostaDada} | Correta: ${e.respostaCorreta}<br>Explicação: ${e.explicacao}</li>`;
+            });
+            document.getElementById('telaJogo').classList.add('hidden');
+            document.getElementById('telaRevisao').classList.add('hidden');
+            document.getElementById('telaFinal').classList.remove('hidden');
+            salvarResultado();
+        }
+        
+        function reiniciar() { iniciarJogo(); }
+        function voltarTelaInicial() {
+            if (timerInterval) clearInterval(timerInterval);
+            document.getElementById('telaFinal').classList.add('hidden');
+            document.getElementById('telaRevisao').classList.add('hidden');
+            document.getElementById('telaJogo').classList.add('hidden');
+            document.getElementById('telaInicial').classList.remove('hidden');
         }
 
-        // Inicializar
-        carregarAluno();
-        carregarAtividade();
+        window.proximoItemRevisao = proximoItemRevisao;
+        carregarDadosPersonalizados();
+        document.body.addEventListener('click', () => { if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume(); }, { once: true });
     </script>
 </body>
 </html>
