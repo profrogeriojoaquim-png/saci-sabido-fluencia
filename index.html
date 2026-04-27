@@ -134,7 +134,7 @@
         const ALUNO_ID = urlParams.get('aluno_id');
         const TURMA_ID = urlParams.get('turma_id');
         
-        // Texto fixo (não depende do Supabase)
+        // Texto fixo
         const TEXTO_BASE = "O pequeno Saci Sabido encontrou um mistério na mata. Ele usou sua inteligência para resolver o problema sem usar o cachimbo, apenas com sabedoria e envolvimento.";
         
         let NOME_ALUNO = "";
@@ -149,25 +149,39 @@
         const TEMPO_MAXIMO_SEGUNDOS = 120;
         const SILENCIO_MAXIMO_MS = 5000;
 
-        // Carregar nome do aluno (opcional)
+        // Carregar nome do aluno
         async function carregarAluno() {
-            if (!ALUNO_ID) return;
+            const infoAlunoDiv = document.getElementById('infoAluno');
+            
+            if (!ALUNO_ID) {
+                infoAlunoDiv.innerHTML = `<strong>👤 Estudante:</strong> Não identificado<br>`;
+                return;
+            }
+            
+            infoAlunoDiv.innerHTML = `<strong>👤 Estudante:</strong> Carregando...<br>`;
+            
             try {
                 const response = await fetch(`${SUPABASE_URL}/rest/v1/alunos?id=eq.${ALUNO_ID}&select=nome_aluno&apikey=${SUPABASE_KEY}`);
+                
                 if (response.ok) {
                     const data = await response.json();
                     if (data && data.length > 0) {
                         NOME_ALUNO = data[0].nome_aluno;
-                        document.getElementById('infoAluno').innerHTML = `<strong>👤 Estudante:</strong> ${NOME_ALUNO?.toLowerCase() || ALUNO_ID.substring(0, 8)}<br>`;
+                        infoAlunoDiv.innerHTML = `<strong>👤 Estudante:</strong> ${NOME_ALUNO?.toLowerCase() || ALUNO_ID.substring(0, 8)}<br>`;
+                        console.log("✅ Aluno carregado:", NOME_ALUNO);
+                    } else {
+                        infoAlunoDiv.innerHTML = `<strong>👤 Estudante:</strong> ${ALUNO_ID.substring(0, 8)}... (Nome não encontrado)<br>`;
                     }
+                } else {
+                    infoAlunoDiv.innerHTML = `<strong>👤 Estudante:</strong> ${ALUNO_ID.substring(0, 8)}... (Erro ao buscar)<br>`;
                 }
             } catch (error) {
                 console.error('Erro ao buscar aluno:', error);
+                infoAlunoDiv.innerHTML = `<strong>👤 Estudante:</strong> ${ALUNO_ID ? ALUNO_ID.substring(0, 8) + '...' : 'Não identificado'}<br>`;
             }
         }
 
         function iniciarLeitura() {
-            // Verificar suporte ao microfone
             if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
                 alert("❌ Seu navegador não suporta microfone.");
                 return;
@@ -179,7 +193,6 @@
                 return;
             }
 
-            // Pedir permissão do microfone primeiro
             navigator.mediaDevices.getUserMedia({ audio: true })
                 .then(() => {
                     recognition = new SpeechRecognition();
@@ -229,10 +242,10 @@
                         let mensagemErro = "";
                         switch(event.error) {
                             case 'not-allowed':
-                                mensagemErro = "❌ Permissão do microfone negada. Verifique as configurações do navegador.";
+                                mensagemErro = "❌ Permissão do microfone negada. Verifique as configurações.";
                                 break;
                             case 'no-speech':
-                                mensagemErro = "🎤 Nenhum discurso detectado. Verifique se o microfone está funcionando.";
+                                mensagemErro = "🎤 Nenhum discurso detectado. Verifique o microfone.";
                                 break;
                             default:
                                 mensagemErro = `Erro: ${event.error}. Tente novamente.`;
@@ -251,7 +264,7 @@
                 })
                 .catch((err) => {
                     console.error("Erro ao acessar microfone:", err);
-                    alert("❌ Não foi possível acessar o microfone. Verifique as permissões do navegador.");
+                    alert("❌ Não foi possível acessar o microfone. Verifique as permissões.");
                 });
         }
         
@@ -374,6 +387,8 @@
                 total_questoes: acertos + erros,
                 habilidade_bncc: "EF35LP01"
             };
+            
+            console.log("💾 Salvando resultado para aluno:", ALUNO_ID, "Nome:", NOME_ALUNO);
             
             try {
                 const response = await fetch(`${SUPABASE_URL}/rest/v1/resultados?apikey=${SUPABASE_KEY}`, {
