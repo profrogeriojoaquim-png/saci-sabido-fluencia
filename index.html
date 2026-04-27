@@ -93,12 +93,11 @@
                 <div id="infoAluno"></div>
                 <div id="infoAtividade"></div>
             </div>
-            <div id="loadingTexto" class="info">
-                <span class="loading"></span> Carregando atividade...
-            </div>
-            <div id="conteudoAtividade" class="hidden">
+            <div id="conteudoAtividade">
                 <p>📌 <strong>Instruções:</strong> Leia o texto em voz alta com calma e clareza.</p>
-                <div class="texto-leitura" id="previewTexto"></div>
+                <div class="texto-leitura" id="previewTexto">
+                    O pequeno Saci Sabido encontrou um mistério na mata. Ele usou sua inteligência para resolver o problema sem usar o cachimbo, apenas com sabedoria e envolvimento.
+                </div>
                 <button id="btnIniciar" onclick="iniciarLeitura()">🎙️ INICIAR LEITURA</button>
             </div>
         </div>
@@ -134,13 +133,10 @@
         const ATIVIDADE_ID = urlParams.get('atividade_id');
         const ALUNO_ID = urlParams.get('aluno_id');
         const TURMA_ID = urlParams.get('turma_id');
-        const JOGO_ID = urlParams.get('jogo_id');
         
-        // TEXTO FIXO DE FALLBACK
-        const TEXTO_FALLBACK = "O pequeno Saci Sabido encontrou um mistério na mata. Ele usou sua inteligência para resolver o problema sem usar o cachimbo, apenas com sabedoria e envolvimento.";
+        // Texto fixo (não depende do Supabase)
+        const TEXTO_BASE = "O pequeno Saci Sabido encontrou um mistério na mata. Ele usou sua inteligência para resolver o problema sem usar o cachimbo, apenas com sabedoria e envolvimento.";
         
-        let TEXTO_BASE = "";
-        let NOME_ATIVIDADE = "";
         let NOME_ALUNO = "";
         let recognition;
         let tempoInicio;
@@ -153,6 +149,7 @@
         const TEMPO_MAXIMO_SEGUNDOS = 120;
         const SILENCIO_MAXIMO_MS = 5000;
 
+        // Carregar nome do aluno (opcional)
         async function carregarAluno() {
             if (!ALUNO_ID) return;
             try {
@@ -169,120 +166,93 @@
             }
         }
 
-        async function carregarAtividade() {
-            if (!ATIVIDADE_ID) {
-                // Usar texto fixo
-                TEXTO_BASE = TEXTO_FALLBACK;
-                NOME_ATIVIDADE = "Avaliação de Fluência";
-                document.getElementById('infoAtividade').innerHTML = `<strong>📝 Atividade:</strong> ${NOME_ATIVIDADE}`;
-                document.getElementById('previewTexto').innerHTML = TEXTO_BASE;
-                document.getElementById('loadingTexto').classList.add('hidden');
-                document.getElementById('conteudoAtividade').classList.remove('hidden');
+        function iniciarLeitura() {
+            // Verificar suporte ao microfone
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                alert("❌ Seu navegador não suporta microfone.");
                 return;
             }
-            
-            try {
-                // Buscar do Supabase com apikey na URL
-                const response = await fetch(`${SUPABASE_URL}/rest/v1/atividades_fluencia?id=eq.${ATIVIDADE_ID}&select=*&apikey=${SUPABASE_KEY}`);
-                
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                
-                const data = await response.json();
-                
-                if (data && data.length > 0) {
-                    TEXTO_BASE = data[0].texto_avaliacao;
-                    NOME_ATIVIDADE = data[0].titulo;
-                    document.getElementById('infoAtividade').innerHTML = `<strong>📝 Atividade:</strong> ${NOME_ATIVIDADE}`;
-                } else {
-                    throw new Error('Atividade não encontrada');
-                }
-                
-                document.getElementById('previewTexto').innerHTML = TEXTO_BASE;
-                document.getElementById('previewTexto').style.fontSize = TEXTO_BASE.length > 300 ? "18px" : "24px";
-                
-            } catch (error) {
-                console.error('Erro ao carregar atividade:', error);
-                // Fallback para texto padrão
-                TEXTO_BASE = TEXTO_FALLBACK;
-                NOME_ATIVIDADE = "Avaliação de Fluência (Modo Offline)";
-                document.getElementById('infoAtividade').innerHTML = `
-                    <div class="alerta">
-                        ⚠️ Usando texto padrão<br>
-                        <small>${error.message}</small>
-                    </div>
-                    <strong>📝 Atividade:</strong> ${NOME_ATIVIDADE}
-                `;
-                document.getElementById('previewTexto').innerHTML = TEXTO_BASE;
-            }
-            
-            document.getElementById('loadingTexto').classList.add('hidden');
-            document.getElementById('conteudoAtividade').classList.remove('hidden');
-        }
 
-        function iniciarLeitura() {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!SpeechRecognition) {
                 alert("❌ Seu navegador não suporta reconhecimento de voz.\n\n✅ Use Google Chrome.");
                 return;
             }
 
-            if (!TEXTO_BASE) {
-                TEXTO_BASE = TEXTO_FALLBACK;
-            }
+            // Pedir permissão do microfone primeiro
+            navigator.mediaDevices.getUserMedia({ audio: true })
+                .then(() => {
+                    recognition = new SpeechRecognition();
+                    recognition.lang = 'pt-BR';
+                    recognition.continuous = true;
+                    recognition.interimResults = true;
+                    recognition.maxAlternatives = 1;
 
-            recognition = new SpeechRecognition();
-            recognition.lang = 'pt-BR';
-            recognition.continuous = true;
-            recognition.interimResults = true;
+                    document.getElementById('telaInicial').classList.add('hidden');
+                    document.getElementById('telaGravacao').classList.remove('hidden');
+                    
+                    const container = document.getElementById('textoAtivo');
+                    const palavras = TEXTO_BASE.split(' ');
+                    container.innerHTML = palavras.map((palavra, idx) => 
+                        `<span class="palavra" id="palavra-${idx}">${palavra}</span>`
+                    ).join('');
 
-            document.getElementById('telaInicial').classList.add('hidden');
-            document.getElementById('telaGravacao').classList.remove('hidden');
-            
-            const container = document.getElementById('textoAtivo');
-            const palavras = TEXTO_BASE.split(' ');
-            container.innerHTML = palavras.map((palavra, idx) => 
-                `<span class="palavra" id="palavra-${idx}">${palavra}</span>`
-            ).join('');
-
-            transcricaoFinal = "";
-            tempoInicio = Date.now();
-            ultimoResultadoTempo = Date.now();
-            
-            iniciarTimer();
-            iniciarTimeoutAutomatico();
-            
-            recognition.onstart = () => {
-                document.getElementById('indicadorSilencio').innerHTML = "🎤 Microfone ativo - Comece a ler...";
-                iniciarMonitoramentoSilencio();
-            };
-            
-            recognition.onresult = (event) => {
-                ultimoResultadoTempo = Date.now();
-                let textoProvisorio = "";
-                for (let i = event.resultIndex; i < event.results.length; i++) {
-                    if (event.results[i].isFinal) {
-                        textoProvisorio += event.results[i][0].transcript + " ";
-                    }
-                }
-                if (textoProvisorio.trim()) {
-                    transcricaoFinal = textoProvisorio.trim();
-                    atualizarFeedbackVisual();
-                }
-            };
-            
-            recognition.onerror = (event) => {
-                let mensagemErro = event.error === 'not-allowed' ? "❌ Permissão do microfone negada." : "🎤 Erro no microfone. Tente novamente.";
-                alert(mensagemErro);
-                pararLeitura();
-            };
-            
-            recognition.onend = () => {
-                if (document.getElementById('telaGravacao').classList.contains('hidden') === false) {
-                    pararLeitura();
-                }
-            };
-            
-            recognition.start();
+                    transcricaoFinal = "";
+                    tempoInicio = Date.now();
+                    ultimoResultadoTempo = Date.now();
+                    
+                    iniciarTimer();
+                    iniciarTimeoutAutomatico();
+                    
+                    recognition.onstart = () => {
+                        document.getElementById('indicadorSilencio').innerHTML = "🎤 Microfone ativo - Comece a ler...";
+                        iniciarMonitoramentoSilencio();
+                    };
+                    
+                    recognition.onresult = (event) => {
+                        ultimoResultadoTempo = Date.now();
+                        let textoProvisorio = "";
+                        for (let i = event.resultIndex; i < event.results.length; i++) {
+                            if (event.results[i].isFinal) {
+                                textoProvisorio += event.results[i][0].transcript + " ";
+                            }
+                        }
+                        if (textoProvisorio.trim()) {
+                            transcricaoFinal = textoProvisorio.trim();
+                            console.log("📝 Reconhecido:", transcricaoFinal);
+                            atualizarFeedbackVisual();
+                        }
+                    };
+                    
+                    recognition.onerror = (event) => {
+                        console.error("Erro:", event.error);
+                        let mensagemErro = "";
+                        switch(event.error) {
+                            case 'not-allowed':
+                                mensagemErro = "❌ Permissão do microfone negada. Verifique as configurações do navegador.";
+                                break;
+                            case 'no-speech':
+                                mensagemErro = "🎤 Nenhum discurso detectado. Verifique se o microfone está funcionando.";
+                                break;
+                            default:
+                                mensagemErro = `Erro: ${event.error}. Tente novamente.`;
+                        }
+                        alert(mensagemErro);
+                        pararLeitura();
+                    };
+                    
+                    recognition.onend = () => {
+                        if (document.getElementById('telaGravacao').classList.contains('hidden') === false) {
+                            pararLeitura();
+                        }
+                    };
+                    
+                    recognition.start();
+                })
+                .catch((err) => {
+                    console.error("Erro ao acessar microfone:", err);
+                    alert("❌ Não foi possível acessar o microfone. Verifique as permissões do navegador.");
+                });
         }
         
         function atualizarFeedbackVisual() {
@@ -307,8 +277,10 @@
         function iniciarMonitoramentoSilencio() {
             silencioTimeout = setInterval(() => {
                 const tempoSilencio = Date.now() - ultimoResultadoTempo;
-                if (tempoSilencio > SILENCIO_MAXIMO_MS) {
+                if (tempoSilencio > SILENCIO_MAXIMO_MS && transcricaoFinal.length > 0) {
                     document.getElementById('indicadorSilencio').innerHTML = "⚠️ Silêncio detectado - Continue a leitura...";
+                } else if (tempoSilencio > SILENCIO_MAXIMO_MS) {
+                    document.getElementById('indicadorSilencio').innerHTML = "🎤 Comece a ler o texto...";
                 } else {
                     document.getElementById('indicadorSilencio').innerHTML = "🎤 Leitura em andamento...";
                 }
@@ -392,8 +364,6 @@
                 tipo_atividade: "fluencia",
                 aluno_id: ALUNO_ID || null,
                 turma_id: TURMA_ID || null,
-                jogo_id: JOGO_ID || null,
-                atividade_id: ATIVIDADE_ID || null,
                 ppm: ppm,
                 nivel_proficiencia: nivel.replace(/[🏆📘📖🌱]/g, '').trim(),
                 texto_avaliacao: TEXTO_BASE.substring(0, 500),
@@ -430,8 +400,8 @@
             try { window.close(); } catch(e) { alert("Feche esta aba para voltar."); }
         }
 
+        // Inicializar
         carregarAluno();
-        carregarAtividade();
     </script>
 </body>
 </html>
