@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Saci Sabido - Avaliação de Fluência Leitora</title>
+    <title>Saci Sabido - Fluência Leitora</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -41,7 +41,6 @@
         .palavra { display: inline-block; margin-right: 8px; transition: all 0.3s; }
         .correto { color: #48bb78; font-weight: bold; background: #f0fff4; border-radius: 8px; padding: 0 4px; }
         .erro { color: #f56565; text-decoration: underline wavy; background: #fff5f5; border-radius: 8px; padding: 0 4px; }
-        
         button {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -56,16 +55,9 @@
         }
         button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
         button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-        
         .btn-gravando { background: #f56565; animation: pulse-red 1.5s infinite; }
         @keyframes pulse-red { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
-        
-        .estatisticas {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            margin: 20px 0;
-        }
+        .estatisticas { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin: 20px 0; }
         .card-metrica { background: #f8f9fa; padding: 15px; border-radius: 15px; }
         .hidden { display: none; }
         .boas-vindas { background: #edf2f7; padding: 20px; border-radius: 20px; margin-bottom: 20px; }
@@ -76,7 +68,6 @@
         .indicador-silencio { font-size: 14px; color: #718096; margin-top: 10px; }
         .loading { display: inline-block; width: 16px; height: 16px; border: 2px solid #fff; border-radius: 50%; border-top-color: transparent; animation: spin 0.6s linear infinite; margin-right: 8px; }
         @keyframes spin { to { transform: rotate(360deg); } }
-        
         @media (max-width: 600px) {
             .container { padding: 20px; }
             .texto-leitura { font-size: 18px; padding: 20px; }
@@ -85,23 +76,24 @@
     </style>
 </head>
 <body>
-
     <div class="container">
+        <!-- TELA INICIAL (CARREGAMENTO) -->
         <div id="telaInicial">
             <div class="boas-vindas">
                 <h2>📖 Avaliação de Fluência Leitora</h2>
                 <div id="infoAluno"></div>
-                <div id="infoAtividade"></div>
             </div>
-            <div id="conteudoAtividade">
+            <div id="loadingTexto" class="info">
+                <span class="loading"></span> Carregando atividade...
+            </div>
+            <div id="conteudoAtividade" class="hidden">
                 <p>📌 <strong>Instruções:</strong> Leia o texto em voz alta com calma e clareza.</p>
-                <div class="texto-leitura" id="previewTexto">
-                    O pequeno Saci Sabido encontrou um mistério na mata. Ele usou sua inteligência para resolver o problema sem usar o cachimbo, apenas com sabedoria e envolvimento.
-                </div>
+                <div class="texto-leitura" id="previewTexto"></div>
                 <button id="btnIniciar" onclick="iniciarLeitura()">🎙️ INICIAR LEITURA</button>
             </div>
         </div>
 
+        <!-- TELA GRAVAÇÃO -->
         <div id="telaGravacao" class="hidden">
             <div class="timer" id="timer">00:00</div>
             <div class="texto-leitura" id="textoAtivo"></div>
@@ -111,6 +103,7 @@
             <p style="font-size: 12px; color: #a0aec0;">⏱️ Tempo máximo: 2 minutos</p>
         </div>
 
+        <!-- TELA FINAL -->
         <div id="telaFinal" class="hidden">
             <h1>📊 Resultado da Proficiência</h1>
             <div class="estatisticas">
@@ -130,14 +123,12 @@
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFtY3FmZm5hd3RmYWVueXppd3NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxNTM5NTMsImV4cCI6MjA4OTcyOTk1M30._CjaNoeJeQp-8s8Jt-dk3bJfktdEV97R5LhLnWgYrNc';
         
         const urlParams = new URLSearchParams(window.location.search);
-        const ATIVIDADE_ID = urlParams.get('atividade_id');
+        const JOGO_ID = urlParams.get('jogo_id');
         const ALUNO_ID = urlParams.get('aluno_id');
         const TURMA_ID = urlParams.get('turma_id');
+        const ALUNO_NOME = urlParams.get('aluno_nome') || '';
         
-        // Texto fixo
-        const TEXTO_BASE = "O pequeno Saci Sabido encontrou um mistério na mata. Ele usou sua inteligência para resolver o problema sem usar o cachimbo, apenas com sabedoria e envolvimento.";
-        
-        let NOME_ALUNO = "";
+        let TEXTO_BASE = "";
         let recognition;
         let tempoInicio;
         let timerInterval;
@@ -148,49 +139,57 @@
         
         const TEMPO_MAXIMO_SEGUNDOS = 120;
         const SILENCIO_MAXIMO_MS = 5000;
+        const TEXTO_FALLBACK = "O pequeno Saci Sabido encontrou um mistério na mata. Ele usou sua inteligência para resolver o problema sem usar o cachimbo, apenas com sabedoria e envolvimento.";
 
-        // Carregar nome do aluno
-        async function carregarAluno() {
-            const infoAlunoDiv = document.getElementById('infoAluno');
-            
-            if (!ALUNO_ID) {
-                infoAlunoDiv.innerHTML = `<strong>👤 Estudante:</strong> Não identificado<br>`;
+        // Mostra o nome do aluno se veio na URL
+        if (ALUNO_NOME) {
+            document.getElementById('infoAluno').innerHTML = `<strong>👤 Estudante:</strong> ${ALUNO_NOME}`;
+        } else if (ALUNO_ID) {
+            document.getElementById('infoAluno').innerHTML = `<strong>👤 Estudante ID:</strong> ${ALUNO_ID.substring(0,8)}...`;
+        }
+
+        async function carregarTexto() {
+            if (!JOGO_ID) {
+                // Se não tem jogo_id, usa texto padrão
+                TEXTO_BASE = TEXTO_FALLBACK;
+                document.getElementById('previewTexto').innerHTML = TEXTO_BASE;
+                document.getElementById('loadingTexto').classList.add('hidden');
+                document.getElementById('conteudoAtividade').classList.remove('hidden');
                 return;
             }
-            
-            infoAlunoDiv.innerHTML = `<strong>👤 Estudante:</strong> Carregando...<br>`;
-            
+
             try {
-                const response = await fetch(`${SUPABASE_URL}/rest/v1/alunos?id=eq.${ALUNO_ID}&select=nome_aluno&apikey=${SUPABASE_KEY}`);
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data && data.length > 0) {
-                        NOME_ALUNO = data[0].nome_aluno;
-                        infoAlunoDiv.innerHTML = `<strong>👤 Estudante:</strong> ${NOME_ALUNO?.toLowerCase() || ALUNO_ID.substring(0, 8)}<br>`;
-                        console.log("✅ Aluno carregado:", NOME_ALUNO);
-                    } else {
-                        infoAlunoDiv.innerHTML = `<strong>👤 Estudante:</strong> ${ALUNO_ID.substring(0, 8)}... (Nome não encontrado)<br>`;
-                    }
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/jogos?id=eq.${JOGO_ID}&select=texto_avaliacao&apikey=${SUPABASE_KEY}`);
+                if (!response.ok) throw new Error('Falha na rede');
+                const data = await response.json();
+                if (data && data.length > 0 && data[0].texto_avaliacao) {
+                    TEXTO_BASE = data[0].texto_avaliacao;
                 } else {
-                    infoAlunoDiv.innerHTML = `<strong>👤 Estudante:</strong> ${ALUNO_ID.substring(0, 8)}... (Erro ao buscar)<br>`;
+                    throw new Error('Texto não encontrado');
                 }
+                document.getElementById('previewTexto').innerHTML = TEXTO_BASE;
+                document.getElementById('previewTexto').style.fontSize = TEXTO_BASE.length > 300 ? "18px" : "24px";
             } catch (error) {
-                console.error('Erro ao buscar aluno:', error);
-                infoAlunoDiv.innerHTML = `<strong>👤 Estudante:</strong> ${ALUNO_ID ? ALUNO_ID.substring(0, 8) + '...' : 'Não identificado'}<br>`;
+                console.warn("Erro ao buscar texto:", error);
+                // Fallback por segurança
+                TEXTO_BASE = TEXTO_FALLBACK;
+                document.getElementById('previewTexto').innerHTML = TEXTO_BASE;
+                document.getElementById('infoAluno').innerHTML += '<div class="alerta">⚠️ Usando texto padrão (modo offline)</div>';
+            } finally {
+                document.getElementById('loadingTexto').classList.add('hidden');
+                document.getElementById('conteudoAtividade').classList.remove('hidden');
             }
         }
 
         function iniciarLeitura() {
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                alert("❌ Seu navegador não suporta microfone.");
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                alert("❌ Seu navegador não suporta reconhecimento de voz. Use Google Chrome.");
                 return;
             }
 
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRecognition) {
-                alert("❌ Seu navegador não suporta reconhecimento de voz.\n\n✅ Use Google Chrome.");
-                return;
+            if (!TEXTO_BASE) {
+                TEXTO_BASE = TEXTO_FALLBACK;
             }
 
             navigator.mediaDevices.getUserMedia({ audio: true })
@@ -199,7 +198,6 @@
                     recognition.lang = 'pt-BR';
                     recognition.continuous = true;
                     recognition.interimResults = true;
-                    recognition.maxAlternatives = 1;
 
                     document.getElementById('telaInicial').classList.add('hidden');
                     document.getElementById('telaGravacao').classList.remove('hidden');
@@ -232,25 +230,12 @@
                         }
                         if (textoProvisorio.trim()) {
                             transcricaoFinal = textoProvisorio.trim();
-                            console.log("📝 Reconhecido:", transcricaoFinal);
                             atualizarFeedbackVisual();
                         }
                     };
                     
                     recognition.onerror = (event) => {
-                        console.error("Erro:", event.error);
-                        let mensagemErro = "";
-                        switch(event.error) {
-                            case 'not-allowed':
-                                mensagemErro = "❌ Permissão do microfone negada. Verifique as configurações.";
-                                break;
-                            case 'no-speech':
-                                mensagemErro = "🎤 Nenhum discurso detectado. Verifique o microfone.";
-                                break;
-                            default:
-                                mensagemErro = `Erro: ${event.error}. Tente novamente.`;
-                        }
-                        alert(mensagemErro);
+                        alert("Erro no microfone: " + event.error);
                         pararLeitura();
                     };
                     
@@ -262,12 +247,11 @@
                     
                     recognition.start();
                 })
-                .catch((err) => {
-                    console.error("Erro ao acessar microfone:", err);
-                    alert("❌ Não foi possível acessar o microfone. Verifique as permissões.");
+                .catch(() => {
+                    alert("❌ Permissão do microfone negada. Verifique as configurações do navegador.");
                 });
         }
-        
+
         function atualizarFeedbackVisual() {
             const palavrasReconhecidas = transcricaoFinal.toLowerCase().split(' ');
             const palavrasOriginais = TEXTO_BASE.toLowerCase().split(' ');
@@ -286,7 +270,7 @@
                 }
             }
         }
-        
+
         function iniciarMonitoramentoSilencio() {
             silencioTimeout = setInterval(() => {
                 const tempoSilencio = Date.now() - ultimoResultadoTempo;
@@ -304,15 +288,15 @@
             let segundosDecorridos = 0;
             timerInterval = setInterval(() => {
                 segundosDecorridos++;
-                const minutos = Math.floor(segundosDecorridos / 60);
-                const segundos = segundosDecorridos % 60;
-                document.getElementById('timer').innerText = `${minutos.toString().padStart(2,'0')}:${segundos.toString().padStart(2,'0')}`;
+                const m = Math.floor(segundosDecorridos / 60);
+                const s = segundosDecorridos % 60;
+                document.getElementById('timer').innerText = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
                 if (segundosDecorridos >= TEMPO_MAXIMO_SEGUNDOS - 10) {
                     document.getElementById('timer').style.color = '#f56565';
                 }
             }, 1000);
         }
-        
+
         function iniciarTimeoutAutomatico() {
             timeoutId = setTimeout(() => {
                 if (recognition && document.getElementById('telaGravacao').classList.contains('hidden') === false) {
@@ -346,10 +330,10 @@
             const precisao = Math.round((acertos / original.length) * 100);
             
             let nivel = "";
-            if (precisao >= 90 && ppm >= 80) nivel = "🏆 Avançado";
-            else if (precisao >= 70 && ppm >= 50) nivel = "📘 Proficiente";
-            else if (precisao >= 50 && ppm >= 30) nivel = "📖 Em desenvolvimento";
-            else nivel = "🌱 Inicial";
+            if (precisao >= 90 && ppm >= 80) nivel = "Avançado";
+            else if (precisao >= 70 && ppm >= 50) nivel = "Proficiente";
+            else if (precisao >= 50 && ppm >= 30) nivel = "Em desenvolvimento";
+            else nivel = "Inicial";
             
             const resultadoHTML = TEXTO_BASE.split(' ').map((palavra, idx) => {
                 const alunoIdx = idx < aluno.length ? aluno[idx] : null;
@@ -377,18 +361,18 @@
                 tipo_atividade: "fluencia",
                 aluno_id: ALUNO_ID || null,
                 turma_id: TURMA_ID || null,
+                jogo_id: JOGO_ID || null,
                 ppm: ppm,
-                nivel_proficiencia: nivel.replace(/[🏆📘📖🌱]/g, '').trim(),
+                nivel_proficiencia: nivel,
                 texto_avaliacao: TEXTO_BASE.substring(0, 500),
                 transcricao_aluno: transcricaoFinal.substring(0, 500),
                 tempo_segundos: Math.round(tempo),
                 acertos: acertos,
                 erros: erros,
                 total_questoes: acertos + erros,
-                habilidade_bncc: "EF35LP01"
+                habilidade_bncc: "EF35LP01",
+                aluno_nome: ALUNO_NOME || null
             };
-            
-            console.log("💾 Salvando resultado para aluno:", ALUNO_ID, "Nome:", NOME_ALUNO);
             
             try {
                 const response = await fetch(`${SUPABASE_URL}/rest/v1/resultados?apikey=${SUPABASE_KEY}`, {
@@ -396,7 +380,6 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(dados)
                 });
-                
                 if (response.ok || response.status === 201) {
                     statusDiv.innerHTML = '✅ Resultado salvo com sucesso!';
                     statusDiv.className = 'sucesso';
@@ -410,13 +393,12 @@
                 localStorage.setItem('saci_sabido_resultado_fallback', JSON.stringify(dados));
             }
         }
-        
+
         function fecharJanela() {
             try { window.close(); } catch(e) { alert("Feche esta aba para voltar."); }
         }
 
-        // Inicializar
-        carregarAluno();
+        carregarTexto();
     </script>
 </body>
 </html>
