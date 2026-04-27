@@ -68,6 +68,7 @@
         .indicador-silencio { font-size: 14px; color: #718096; margin-top: 10px; }
         .loading { display: inline-block; width: 16px; height: 16px; border: 2px solid #fff; border-radius: 50%; border-top-color: transparent; animation: spin 0.6s linear infinite; margin-right: 8px; }
         @keyframes spin { to { transform: rotate(360deg); } }
+        .link-voltar { display: inline-block; margin-top: 15px; color: #667eea; text-decoration: underline; cursor: pointer; font-weight: bold; }
         @media (max-width: 600px) {
             .container { padding: 20px; }
             .texto-leitura { font-size: 18px; padding: 20px; }
@@ -77,7 +78,6 @@
 </head>
 <body>
     <div class="container">
-        <!-- TELA INICIAL (CARREGAMENTO) -->
         <div id="telaInicial">
             <div class="boas-vindas">
                 <h2>📖 Avaliação de Fluência Leitora</h2>
@@ -93,7 +93,6 @@
             </div>
         </div>
 
-        <!-- TELA GRAVAÇÃO -->
         <div id="telaGravacao" class="hidden">
             <div class="timer" id="timer">00:00</div>
             <div class="texto-leitura" id="textoAtivo"></div>
@@ -103,7 +102,6 @@
             <p style="font-size: 12px; color: #a0aec0;">⏱️ Tempo máximo: 2 minutos</p>
         </div>
 
-        <!-- TELA FINAL -->
         <div id="telaFinal" class="hidden">
             <h1>📊 Resultado da Proficiência</h1>
             <div class="estatisticas">
@@ -115,12 +113,15 @@
             <div class="texto-leitura" id="resultadoVisual"></div>
             <div id="statusSalvamento" style="margin: 10px 0; font-size: 14px;"></div>
             <button onclick="fecharJanela()">✅ Concluir</button>
+            <div id="fallbackLink" class="hidden">
+                <a href="#" onclick="voltarParaAtividades()" class="link-voltar">← Clique aqui se a janela não fechar automaticamente</a>
+            </div>
         </div>
     </div>
 
     <script>
         const SUPABASE_URL = 'https://qmcqffnawtfaenyziwsn.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFtY3FmZm5hd3RmYWVueXppd3NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxNTM5NTMsImV4cCI6MjA4OTcyOTk1M30._CjaNoeJeQp-8s8Jt-dk3bJfktdEV97R5LhLnWgYrNc';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFtY3FmZm5hd3RmYWVueXppd3NuIiwicm9sZSI6 ImFub24iLCJpYXQiOjE3NzQxNTM5NTMsImV4cCI6MjA4OTcyOTk1M30._CjaNoeJeQp-8s8Jt-dk3bJfktdEV97R5LhLnWgYrNc';
         
         const urlParams = new URLSearchParams(window.location.search);
         const JOGO_ID = urlParams.get('jogo_id');
@@ -141,7 +142,6 @@
         const SILENCIO_MAXIMO_MS = 5000;
         const TEXTO_FALLBACK = "O pequeno Saci Sabido encontrou um mistério na mata. Ele usou sua inteligência para resolver o problema sem usar o cachimbo, apenas com sabedoria e envolvimento.";
 
-        // Mostra o nome do aluno se veio na URL
         if (ALUNO_NOME) {
             document.getElementById('infoAluno').innerHTML = `<strong>👤 Estudante:</strong> ${ALUNO_NOME}`;
         } else if (ALUNO_ID) {
@@ -150,7 +150,6 @@
 
         async function carregarTexto() {
             if (!JOGO_ID) {
-                // Se não tem jogo_id, usa texto padrão
                 TEXTO_BASE = TEXTO_FALLBACK;
                 document.getElementById('previewTexto').innerHTML = TEXTO_BASE;
                 document.getElementById('loadingTexto').classList.add('hidden');
@@ -171,7 +170,6 @@
                 document.getElementById('previewTexto').style.fontSize = TEXTO_BASE.length > 300 ? "18px" : "24px";
             } catch (error) {
                 console.warn("Erro ao buscar texto:", error);
-                // Fallback por segurança
                 TEXTO_BASE = TEXTO_FALLBACK;
                 document.getElementById('previewTexto').innerHTML = TEXTO_BASE;
                 document.getElementById('infoAluno').innerHTML += '<div class="alerta">⚠️ Usando texto padrão (modo offline)</div>';
@@ -395,7 +393,22 @@
         }
 
         function fecharJanela() {
-            try { window.close(); } catch(e) { alert("Feche esta aba para voltar."); }
+            try {
+                window.close();
+                setTimeout(() => {
+                    document.getElementById('fallbackLink').classList.remove('hidden');
+                }, 1000);
+            } catch(e) {
+                document.getElementById('fallbackLink').classList.remove('hidden');
+            }
+        }
+
+        function voltarParaAtividades() {
+            if (document.referrer) {
+                window.location.href = document.referrer;
+            } else {
+                alert("Feche esta aba manualmente para voltar às atividades.");
+            }
         }
 
         carregarTexto();
