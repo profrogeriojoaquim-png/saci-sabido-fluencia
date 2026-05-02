@@ -226,7 +226,6 @@
         console.log('jogoSlug:', jogoSlug);
         console.log('alunoId:', alunoId);
         console.log('turmaId:', turmaId);
-        console.log('escolaId:', escolaId);
         
         if (modoTeste) {
             console.log('Modo teste - acesso liberado');
@@ -234,63 +233,65 @@
         }
         
         if (!jogoSlug || !turmaId) {
-            console.log('ERRO: Parâmetros faltando');
             mostrarErro('❌ Link inválido. Faltam parâmetros.');
             return false;
         }
         
         try {
-            // Primeiro, buscar o jogo pelo slug
-            console.log('Buscando jogo com slug:', jogoSlug);
-            const { data: jogo, error: jogoError } = await supabaseClient
+            // 1. Buscar o ID do jogo
+            const { data: jogo, error: erroJogo } = await supabaseClient
                 .from('jogos')
-                .select('id, nome')
+                .select('id')
                 .eq('slug', jogoSlug)
                 .single();
             
-            if (jogoError) {
-                console.log('ERRO ao buscar jogo:', jogoError);
+            if (erroJogo || !jogo) {
+                console.log('Jogo não encontrado:', erroJogo);
                 mostrarErro('❌ Jogo não encontrado.');
                 return false;
             }
             
-            console.log('Jogo encontrado:', jogo);
             jogoId = jogo.id;
+            console.log('Jogo ID:', jogoId);
             
-            // Segundo, buscar a atribuição do jogo para a turma
-            console.log('Buscando atribuição para turma:', turmaId);
-            const { data: jogoTurma, error: turmaError } = await supabaseClient
+            // 2. Buscar a atribuição na tabela jogos_turma
+            const { data: atribuicao, error: erroAttr } = await supabaseClient
                 .from('jogos_turma')
                 .select('status, data_inicio, data_fim')
                 .eq('turma_id', turmaId)
-                .eq('jogo_id', jogoId)
-                .maybeSingle();  // Use maybeSingle para não dar erro se não encontrar
+                .eq('jogo_id', jogoId);
             
-            console.log('Atribuição encontrada:', jogoTurma);
+            console.log('Resultado da busca:', atribuicao);
             
-            if (!jogoTurma) {
-                console.log('ERRO: Nenhuma atribuição encontrada para este jogo na turma');
+            if (erroAttr) {
+                console.log('Erro na consulta:', erroAttr);
+                mostrarErro('Erro ao verificar acesso.');
+                return false;
+            }
+            
+            if (!atribuicao || atribuicao.length === 0) {
+                console.log('Nenhuma atribuição encontrada');
                 mostrarErro('❌ Este jogo não foi atribuído à sua turma pelo professor.');
                 return false;
             }
             
+            const jogoTurma = atribuicao[0];
+            console.log('Atribuição encontrada:', jogoTurma);
+            
             if (jogoTurma.status === 'inativo') {
-                console.log('ERRO: Jogo está inativo');
                 mostrarErro('❌ Este jogo está bloqueado pelo professor.');
                 return false;
             }
             
             const hoje = new Date().toISOString().split('T')[0];
-            console.log('Data de hoje:', hoje);
+            console.log('Hoje:', hoje);
             
             if (jogoTurma.status === 'agendado') {
                 if (jogoTurma.data_inicio && hoje < jogoTurma.data_inicio) {
-                    console.log('ERRO: Data de início não atingida');
                     mostrarErro(`📅 Disponível a partir de ${jogoTurma.data_inicio}`);
                     return false;
                 }
                 if (jogoTurma.data_fim && hoje > jogoTurma.data_fim) {
-                    console.log('ERRO: Prazo expirado');
                     mostrarErro(`⏰ Prazo encerrado em ${jogoTurma.data_fim}`);
                     return false;
                 }
@@ -299,8 +300,8 @@
             console.log('✅ ACESSO LIBERADO!');
             return true;
             
-        } catch (e) {
-            console.log('ERRO na verificação:', e);
+        } catch (erro) {
+            console.log('ERRO na verificação:', erro);
             mostrarErro('Erro ao verificar acesso. Tente novamente.');
             return false;
         }
