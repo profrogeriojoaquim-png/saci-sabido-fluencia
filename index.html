@@ -56,17 +56,6 @@
             font-family: monospace;
             min-width: 150px;
         }
-        .operador-btn {
-            font-size: 32px;
-            font-weight: bold;
-            background: #f8fafc;
-            color: #1e293b;
-            border: 2px solid #e2e8f0;
-            padding: 20px 30px;
-            border-radius: 60px;
-            cursor: pointer;
-        }
-        .operador-btn:hover { background: #e0e7ff; border-color: #6366f1; transform: scale(1.05); }
         .numeros-container {
             display: flex;
             gap: 20px;
@@ -233,36 +222,88 @@
     }
 
     async function verificarAcesso() {
-        if (modoTeste) return true;
+        console.log('=== VERIFICANDO ACESSO ===');
+        console.log('jogoSlug:', jogoSlug);
+        console.log('alunoId:', alunoId);
+        console.log('turmaId:', turmaId);
+        console.log('escolaId:', escolaId);
+        
+        if (modoTeste) {
+            console.log('Modo teste - acesso liberado');
+            return true;
+        }
+        
         if (!jogoSlug || !turmaId) {
+            console.log('ERRO: Parâmetros faltando');
             mostrarErro('❌ Link inválido. Faltam parâmetros.');
             return false;
         }
+        
         try {
-            const { data: jogo } = await supabaseClient.from('jogos').select('id').eq('slug', jogoSlug).single();
-            if (!jogo) { mostrarErro('❌ Jogo não encontrado.'); return false; }
+            // Primeiro, buscar o jogo pelo slug
+            console.log('Buscando jogo com slug:', jogoSlug);
+            const { data: jogo, error: jogoError } = await supabaseClient
+                .from('jogos')
+                .select('id, nome')
+                .eq('slug', jogoSlug)
+                .single();
+            
+            if (jogoError) {
+                console.log('ERRO ao buscar jogo:', jogoError);
+                mostrarErro('❌ Jogo não encontrado.');
+                return false;
+            }
+            
+            console.log('Jogo encontrado:', jogo);
             jogoId = jogo.id;
             
-            const { data: jogoTurma } = await supabaseClient.from('jogos_turma')
+            // Segundo, buscar a atribuição do jogo para a turma
+            console.log('Buscando atribuição para turma:', turmaId);
+            const { data: jogoTurma, error: turmaError } = await supabaseClient
+                .from('jogos_turma')
                 .select('status, data_inicio, data_fim')
-                .eq('turma_id', turmaId).eq('jogo_id', jogoId).single();
+                .eq('turma_id', turmaId)
+                .eq('jogo_id', jogoId)
+                .maybeSingle();  // Use maybeSingle para não dar erro se não encontrar
             
-            if (!jogoTurma) { mostrarErro('❌ Este jogo não foi atribuído à sua turma.'); return false; }
-            if (jogoTurma.status === 'inativo') { mostrarErro('❌ Este jogo está bloqueado pelo professor.'); return false; }
+            console.log('Atribuição encontrada:', jogoTurma);
+            
+            if (!jogoTurma) {
+                console.log('ERRO: Nenhuma atribuição encontrada para este jogo na turma');
+                mostrarErro('❌ Este jogo não foi atribuído à sua turma pelo professor.');
+                return false;
+            }
+            
+            if (jogoTurma.status === 'inativo') {
+                console.log('ERRO: Jogo está inativo');
+                mostrarErro('❌ Este jogo está bloqueado pelo professor.');
+                return false;
+            }
             
             const hoje = new Date().toISOString().split('T')[0];
+            console.log('Data de hoje:', hoje);
+            
             if (jogoTurma.status === 'agendado') {
                 if (jogoTurma.data_inicio && hoje < jogoTurma.data_inicio) {
+                    console.log('ERRO: Data de início não atingida');
                     mostrarErro(`📅 Disponível a partir de ${jogoTurma.data_inicio}`);
                     return false;
                 }
                 if (jogoTurma.data_fim && hoje > jogoTurma.data_fim) {
+                    console.log('ERRO: Prazo expirado');
                     mostrarErro(`⏰ Prazo encerrado em ${jogoTurma.data_fim}`);
                     return false;
                 }
             }
+            
+            console.log('✅ ACESSO LIBERADO!');
             return true;
-        } catch(e) { console.error(e); mostrarErro('Erro ao verificar acesso.'); return false; }
+            
+        } catch (e) {
+            console.log('ERRO na verificação:', e);
+            mostrarErro('Erro ao verificar acesso. Tente novamente.');
+            return false;
+        }
     }
 
     function mostrarErro(mensagem) {
