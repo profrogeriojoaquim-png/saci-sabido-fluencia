@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Saci Sabido - Fluência Leitora</title>
+    <title>Saci Sabido - Fluência em Adição</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #4c51bf 0%, #6b46c1 100%);
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
             min-height: 100vh;
             display: flex;
             justify-content: center;
@@ -17,401 +17,318 @@
         }
         .container {
             background: white;
-            border-radius: 30px;
-            padding: 30px;
+            border-radius: 40px;
+            padding: 24px;
             max-width: 900px;
             width: 100%;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
             text-align: center;
         }
-        .texto-leitura {
-            font-size: 24px;
-            line-height: 1.6;
-            color: #2d3748;
-            background: #f7fafc;
-            padding: 30px;
-            border-radius: 20px;
-            margin: 20px 0;
-            text-align: left;
-            border: 2px solid #edf2f7;
-            min-height: 200px;
-            max-height: 400px;
-            overflow-y: auto;
-        }
-        .palavra { display: inline-block; margin-right: 8px; transition: all 0.3s; }
-        .correto { color: #48bb78; font-weight: bold; background: #f0fff4; border-radius: 8px; padding: 0 4px; }
-        .erro { color: #f56565; text-decoration: underline wavy; background: #fff5f5; border-radius: 8px; padding: 0 4px; }
         button {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #6366f1;
             color: white;
             border: none;
-            padding: 15px 30px;
-            font-size: 18px;
+            padding: 12px 28px;
+            font-size: 16px;
             font-weight: bold;
-            border-radius: 50px;
+            border-radius: 40px;
             cursor: pointer;
-            transition: all 0.2s;
             margin: 5px;
+            transition: all 0.2s ease;
         }
-        button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
-        button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-        .btn-gravando { background: #f56565; animation: pulse-red 1.5s infinite; }
-        @keyframes pulse-red { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
-        .estatisticas { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin: 20px 0; }
-        .card-metrica { background: #f8f9fa; padding: 15px; border-radius: 15px; }
+        button:hover { background: #4f46e5; transform: scale(1.02); }
         .hidden { display: none; }
-        .boas-vindas { background: #edf2f7; padding: 20px; border-radius: 20px; margin-bottom: 20px; }
-        .alerta { background: #fed7d7; color: #c53030; padding: 10px; border-radius: 10px; margin: 10px 0; }
-        .sucesso { background: #c6f6d5; color: #22543d; padding: 10px; border-radius: 10px; margin: 10px 0; }
-        .info { background: #bee3f8; color: #2c5282; padding: 10px; border-radius: 10px; margin: 10px 0; }
-        .timer { font-size: 24px; color: #667eea; font-weight: bold; font-family: monospace; }
-        .indicador-silencio { font-size: 14px; color: #718096; margin-top: 10px; }
-        .loading { display: inline-block; width: 16px; height: 16px; border: 2px solid #fff; border-radius: 50%; border-top-color: transparent; animation: spin 0.6s linear infinite; margin-right: 8px; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .link-voltar { display: inline-block; margin-top: 15px; color: #667eea; text-decoration: underline; cursor: pointer; font-weight: bold; }
-        @media (max-width: 600px) {
-            .container { padding: 20px; }
-            .texto-leitura { font-size: 18px; padding: 20px; }
-            .estatisticas { grid-template-columns: 1fr; }
+        .feedback {
+            margin: 15px auto;
+            padding: 10px;
+            border-radius: 40px;
+            font-weight: bold;
         }
+        .feedback-sucesso { background: #bbf7d0; color: #166534; }
+        .feedback-erro { background: #fee2e2; color: #991b1b; }
+        .numero-card {
+            background: #f1f5f9;
+            border-radius: 24px;
+            padding: 30px;
+            text-align: center;
+            font-size: 48px;
+            font-weight: bold;
+            font-family: monospace;
+            min-width: 150px;
+        }
+        .operador-btn {
+            font-size: 32px;
+            font-weight: bold;
+            background: #f8fafc;
+            color: #1e293b;
+            border: 2px solid #e2e8f0;
+            padding: 20px 30px;
+            border-radius: 60px;
+            cursor: pointer;
+        }
+        .operador-btn:hover { background: #e0e7ff; border-color: #6366f1; transform: scale(1.05); }
+        .numeros-container {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            justify-content: center;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+        .text-center { text-align: center; }
+        .mt-2 { margin-top: 8px; }
+        .info-sesi {
+            background: #fef9c3;
+            border-radius: 20px;
+            padding: 10px;
+            margin-top: 10px;
+            font-size: 12px;
+            color: #854d0e;
+        }
+        .erro-acesso {
+            text-align: center;
+            padding: 50px;
+            background: white;
+            border-radius: 40px;
+            max-width: 500px;
+            margin: 20px auto;
+        }
+        .erro-acesso h2 { color: #e53e3e; margin-bottom: 20px; }
+        .erro-acesso button { background: #6366f1; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; margin-top: 20px; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div id="telaInicial">
-            <div class="boas-vindas">
-                <h2>📖 Avaliação de Fluência Leitora</h2>
-                <div id="infoAluno"></div>
-            </div>
-            <div id="loadingTexto" class="info">
-                <span class="loading"></span> Carregando atividade...
-            </div>
-            <div id="conteudoAtividade" class="hidden">
-                <p>📌 <strong>Instruções:</strong> Leia o texto em voz alta com calma e clareza.</p>
-                <div class="texto-leitura" id="previewTexto"></div>
-                <button id="btnIniciar" onclick="iniciarLeitura()">🎙️ INICIAR LEITURA</button>
-            </div>
-        </div>
+<div id="app"></div>
 
-        <div id="telaGravacao" class="hidden">
-            <div class="timer" id="timer">00:00</div>
-            <div class="texto-leitura" id="textoAtivo"></div>
-            <button id="btnParar" class="btn-gravando" onclick="pararLeitura()">⏹️ FINALIZAR AGORA</button>
-            <div class="indicador-silencio" id="indicadorSilencio"></div>
-            <p style="margin-top: 15px; color: #718096;">🎤 O sistema está analisando sua voz em tempo real...</p>
-            <p style="font-size: 12px; color: #a0aec0;">⏱️ Tempo máximo: 2 minutos</p>
-        </div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+    const SUPABASE_URL = 'https://qmcqffnawtfaenyziwsn.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFtY3FmZm5hd3RmYWVueXppd3NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxNTM5NTMsImV4cCI6MjA4OTcyOTk1M30._CjaNoeJeQp-8s8Jt-dk3bJfktdEV97R5LhLnWgYrNc';
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        <div id="telaFinal" class="hidden">
-            <h1>📊 Resultado da Proficiência</h1>
-            <div class="estatisticas">
-                <div class="card-metrica"><h3>⏱️ Velocidade</h3><p><strong id="resPPM">0</strong> <span style="font-size: 14px;">palavras/minuto</span></p></div>
-                <div class="card-metrica"><h3>🎯 Precisão</h3><p><strong id="resPrecisao">0%</strong> <span style="font-size: 14px;">de acertos</span></p></div>
-                <div class="card-metrica"><h3>⏰ Tempo total</h3><p><strong id="resTempo">0</strong> <span style="font-size: 14px;">segundos</span></p></div>
-                <div class="card-metrica"><h3>📝 Nível</h3><p><strong id="resNivel">-</strong></p></div>
-            </div>
-            <div class="texto-leitura" id="resultadoVisual"></div>
-            <div id="statusSalvamento" style="margin: 10px 0; font-size: 14px;"></div>
-            <button onclick="fecharJanela()">✅ Concluir</button>
-            <div id="fallbackLink" class="hidden">
-                <a href="#" onclick="voltarParaAtividades()" class="link-voltar">← Clique aqui se a janela não fechar automaticamente</a>
-            </div>
-        </div>
-    </div>
+    const urlParams = new URLSearchParams(window.location.search);
+    const jogoSlug = urlParams.get('jogo_slug');
+    const alunoId = urlParams.get('aluno_id');
+    const turmaId = urlParams.get('turma_id');
+    const escolaId = urlParams.get('escola_id');
+    const modoTeste = urlParams.get('modo_teste') === 'true';
 
-    <script>
-        const SUPABASE_URL = 'https://qmcqffnawtfaenyziwsn.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFtY3FmZm5hd3RmYWVueXppd3NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxNTM5NTMsImV4cCI6MjA4OTcyOTk1M30._CjaNoeJeQp-8s8Jt-dk3bJfktdEV97R5LhLnWgYrNc';
-        console.log("Fluência Leitora - versão 27/04 22:10 - chave atualizada");
-        const urlParams = new URLSearchParams(window.location.search);
-        const JOGO_ID = urlParams.get('jogo_id');
-        const ALUNO_ID = urlParams.get('aluno_id');
-        const TURMA_ID = urlParams.get('turma_id');
-        const ALUNO_NOME = urlParams.get('aluno_nome') || '';
+    let pontuacao = 0, acertos = 0, erros = 0, jogoAtivo = false;
+    let tempoInicio = null, tempoDecorrido = 0, intervalo = null;
+    let detalhesErros = [];
+    let numero1 = 0, numero2 = 0, respostaCorreta = 0;
+    let perguntasRespondidas = 0;
+    let jogoId = null;
+    const TOTAL_PERGUNTAS = 10;
+
+    function getMaxNumero() {
+        if (acertos < 5) return 20;
+        if (acertos < 10) return 50;
+        return 100;
+    }
+
+    function gerarPergunta() {
+        const maxNum = getMaxNumero();
+        numero1 = Math.floor(Math.random() * (maxNum + 1));
+        numero2 = Math.floor(Math.random() * (maxNum + 1));
+        respostaCorreta = numero1 + numero2;
         
-        let TEXTO_BASE = "";
-        let recognition;
-        let tempoInicio;
-        let timerInterval;
-        let timeoutId;
-        let transcricaoFinal = "";
-        let silencioTimeout;
-        let ultimoResultadoTempo = Date.now();
+        document.getElementById('numeroEsquerda').textContent = numero1;
+        document.getElementById('numeroDireita').textContent = numero2;
+        document.getElementById('perguntaAtual').textContent = perguntasRespondidas + 1;
+        document.getElementById('pontos').textContent = Math.floor(pontuacao);
+    }
+
+    function mostrarFeedback(mensagem, tipo) {
+        const feedbackDiv = document.getElementById('feedbackJogo');
+        feedbackDiv.textContent = mensagem;
+        feedbackDiv.className = 'feedback';
+        if (tipo === 'sucesso') feedbackDiv.classList.add('feedback-sucesso');
+        else if (tipo === 'erro') feedbackDiv.classList.add('feedback-erro');
+        setTimeout(() => {
+            if (feedbackDiv.textContent === mensagem) {
+                feedbackDiv.textContent = '';
+                feedbackDiv.className = 'feedback';
+            }
+        }, 2000);
+    }
+
+    function iniciarCronometro() {
+        if (intervalo) clearInterval(intervalo);
+        intervalo = setInterval(() => {
+            if (!jogoAtivo) return;
+            tempoDecorrido = Math.floor((Date.now() - tempoInicio) / 1000);
+        }, 1000);
+    }
+
+    function pararCronometro() { if (intervalo) clearInterval(intervalo); intervalo = null; }
+
+    async function salvarResultado() {
+        if (modoTeste || !alunoId) return;
+        const dados = {
+            aluno_id: alunoId, jogo_id: jogoId, turma_id: turmaId,
+            acertos: acertos, erros: erros, tempo_segundos: tempoDecorrido,
+            total_questoes: TOTAL_PERGUNTAS, habilidade_bncc: 'EF.02.MAT.1.33',
+            detalhes_erros: detalhesErros.slice(0, 20)
+        };
+        await supabaseClient.from('resultados').insert([dados]);
+    }
+
+    async function finalizarJogo() {
+        if (!jogoAtivo) return;
+        jogoAtivo = false;
+        pararCronometro();
+        document.getElementById('finalPontos').textContent = Math.floor(pontuacao);
+        document.getElementById('finalAcertos').textContent = acertos;
+        document.getElementById('finalErros').textContent = erros;
+        await salvarResultado();
+        document.getElementById('telaJogo').classList.add('hidden');
+        document.getElementById('telaFinal').classList.remove('hidden');
+    }
+
+    function verificarResposta() {
+        if (!jogoAtivo) return;
+        const inputResposta = document.getElementById('inputResposta');
+        const respostaAluno = parseInt(inputResposta.value);
         
-        const TEMPO_MAXIMO_SEGUNDOS = 120;
-        const SILENCIO_MAXIMO_MS = 5000;
-        const TEXTO_FALLBACK = "O pequeno Saci Sabido encontrou um mistério na mata. Ele usou sua inteligência para resolver o problema sem usar o cachimbo, apenas com sabedoria e envolvimento.";
-
-        if (ALUNO_NOME) {
-            document.getElementById('infoAluno').innerHTML = `<strong>👤 Estudante:</strong> ${ALUNO_NOME}`;
-        } else if (ALUNO_ID) {
-            document.getElementById('infoAluno').innerHTML = `<strong>👤 Estudante ID:</strong> ${ALUNO_ID.substring(0,8)}...`;
+        if (isNaN(respostaAluno)) {
+            mostrarFeedback('Digite um número!', 'erro');
+            return;
         }
-
-        async function carregarTexto() {
-            if (!JOGO_ID) {
-                TEXTO_BASE = TEXTO_FALLBACK;
-                document.getElementById('previewTexto').innerHTML = TEXTO_BASE;
-                document.getElementById('loadingTexto').classList.add('hidden');
-                document.getElementById('conteudoAtividade').classList.remove('hidden');
-                return;
-            }
-
-            try {
-                const response = await fetch(`${SUPABASE_URL}/rest/v1/jogos?id=eq.${JOGO_ID}&select=texto_avaliacao&apikey=${SUPABASE_KEY}`);
-                if (!response.ok) throw new Error('Falha na rede');
-                const data = await response.json();
-                if (data && data.length > 0 && data[0].texto_avaliacao) {
-                    TEXTO_BASE = data[0].texto_avaliacao;
-                } else {
-                    throw new Error('Texto não encontrado');
-                }
-                document.getElementById('previewTexto').innerHTML = TEXTO_BASE;
-                document.getElementById('previewTexto').style.fontSize = TEXTO_BASE.length > 300 ? "18px" : "24px";
-            } catch (error) {
-                console.warn("Erro ao buscar texto:", error);
-                TEXTO_BASE = TEXTO_FALLBACK;
-                document.getElementById('previewTexto').innerHTML = TEXTO_BASE;
-                document.getElementById('infoAluno').innerHTML += '<div class="alerta">⚠️ Usando texto padrão (modo offline)</div>';
-            } finally {
-                document.getElementById('loadingTexto').classList.add('hidden');
-                document.getElementById('conteudoAtividade').classList.remove('hidden');
-            }
+        
+        if (respostaAluno === respostaCorreta) {
+            pontuacao += 10;
+            acertos++;
+            mostrarFeedback(`✅ Correto! +10 pontos`, 'sucesso');
+        } else {
+            pontuacao = Math.max(0, pontuacao - 5);
+            erros++;
+            detalhesErros.push({ num1: numero1, num2: numero2, resposta: respostaAluno, correto: respostaCorreta });
+            mostrarFeedback(`❌ Errado! A resposta correta era ${respostaCorreta}. -5 pontos`, 'erro');
         }
-
-        function iniciarLeitura() {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRecognition) {
-                alert("❌ Seu navegador não suporta reconhecimento de voz. Use Google Chrome.");
-                return;
-            }
-
-            if (!TEXTO_BASE) {
-                TEXTO_BASE = TEXTO_FALLBACK;
-            }
-
-            navigator.mediaDevices.getUserMedia({ audio: true })
-                .then(() => {
-                    recognition = new SpeechRecognition();
-                    recognition.lang = 'pt-BR';
-                    recognition.continuous = true;
-                    recognition.interimResults = true;
-
-                    document.getElementById('telaInicial').classList.add('hidden');
-                    document.getElementById('telaGravacao').classList.remove('hidden');
-                    
-                    const container = document.getElementById('textoAtivo');
-                    const palavras = TEXTO_BASE.split(' ');
-                    container.innerHTML = palavras.map((palavra, idx) => 
-                        `<span class="palavra" id="palavra-${idx}">${palavra}</span>`
-                    ).join('');
-
-                    transcricaoFinal = "";
-                    tempoInicio = Date.now();
-                    ultimoResultadoTempo = Date.now();
-                    
-                    iniciarTimer();
-                    iniciarTimeoutAutomatico();
-                    
-                    recognition.onstart = () => {
-                        document.getElementById('indicadorSilencio').innerHTML = "🎤 Microfone ativo - Comece a ler...";
-                        iniciarMonitoramentoSilencio();
-                    };
-                    
-                    recognition.onresult = (event) => {
-                        ultimoResultadoTempo = Date.now();
-                        let textoProvisorio = "";
-                        for (let i = event.resultIndex; i < event.results.length; i++) {
-                            if (event.results[i].isFinal) {
-                                textoProvisorio += event.results[i][0].transcript + " ";
-                            }
-                        }
-                        if (textoProvisorio.trim()) {
-                            transcricaoFinal = textoProvisorio.trim();
-                            atualizarFeedbackVisual();
-                        }
-                    };
-                    
-                    recognition.onerror = (event) => {
-                        alert("Erro no microfone: " + event.error);
-                        pararLeitura();
-                    };
-                    
-                    recognition.onend = () => {
-                        if (document.getElementById('telaGravacao').classList.contains('hidden') === false) {
-                            pararLeitura();
-                        }
-                    };
-                    
-                    recognition.start();
-                })
-                .catch(() => {
-                    alert("❌ Permissão do microfone negada. Verifique as configurações do navegador.");
-                });
+        
+        perguntasRespondidas++;
+        inputResposta.value = '';
+        document.getElementById('pontos').textContent = Math.floor(pontuacao);
+        
+        if (perguntasRespondidas >= TOTAL_PERGUNTAS) {
+            finalizarJogo();
+        } else {
+            gerarPergunta();
         }
+    }
 
-        function atualizarFeedbackVisual() {
-            const palavrasReconhecidas = transcricaoFinal.toLowerCase().split(' ');
-            const palavrasOriginais = TEXTO_BASE.toLowerCase().split(' ');
+    function iniciarJogo() {
+        pontuacao = 0; acertos = 0; erros = 0; perguntasRespondidas = 0;
+        detalhesErros = []; jogoAtivo = true;
+        tempoInicio = Date.now(); tempoDecorrido = 0;
+        document.getElementById('pontos').textContent = "0";
+        document.getElementById('perguntaAtual').textContent = "1";
+        gerarPergunta();
+        iniciarCronometro();
+        document.getElementById('telaInicial').classList.add('hidden');
+        document.getElementById('telaJogo').classList.remove('hidden');
+        document.getElementById('telaFinal').classList.add('hidden');
+        document.getElementById('inputResposta').focus();
+    }
+
+    async function verificarAcesso() {
+        if (modoTeste) return true;
+        if (!jogoSlug || !turmaId) {
+            mostrarErro('❌ Link inválido. Faltam parâmetros.');
+            return false;
+        }
+        try {
+            const { data: jogo } = await supabaseClient.from('jogos').select('id').eq('slug', jogoSlug).single();
+            if (!jogo) { mostrarErro('❌ Jogo não encontrado.'); return false; }
+            jogoId = jogo.id;
             
-            for (let i = 0; i < palavrasOriginais.length; i++) {
-                const elemento = document.getElementById(`palavra-${i}`);
-                if (elemento) {
-                    const palavraOriginal = palavrasOriginais[i].replace(/[.,!?;]/g, '');
-                    if (palavrasReconhecidas.includes(palavraOriginal)) {
-                        elemento.classList.add('correto');
-                        elemento.classList.remove('erro');
-                    } else {
-                        elemento.classList.add('erro');
-                        elemento.classList.remove('correto');
-                    }
+            const { data: jogoTurma } = await supabaseClient.from('jogos_turma')
+                .select('status, data_inicio, data_fim')
+                .eq('turma_id', turmaId).eq('jogo_id', jogoId).single();
+            
+            if (!jogoTurma) { mostrarErro('❌ Este jogo não foi atribuído à sua turma.'); return false; }
+            if (jogoTurma.status === 'inativo') { mostrarErro('❌ Este jogo está bloqueado pelo professor.'); return false; }
+            
+            const hoje = new Date().toISOString().split('T')[0];
+            if (jogoTurma.status === 'agendado') {
+                if (jogoTurma.data_inicio && hoje < jogoTurma.data_inicio) {
+                    mostrarErro(`📅 Disponível a partir de ${jogoTurma.data_inicio}`);
+                    return false;
+                }
+                if (jogoTurma.data_fim && hoje > jogoTurma.data_fim) {
+                    mostrarErro(`⏰ Prazo encerrado em ${jogoTurma.data_fim}`);
+                    return false;
                 }
             }
-        }
+            return true;
+        } catch(e) { console.error(e); mostrarErro('Erro ao verificar acesso.'); return false; }
+    }
 
-        function iniciarMonitoramentoSilencio() {
-            silencioTimeout = setInterval(() => {
-                const tempoSilencio = Date.now() - ultimoResultadoTempo;
-                if (tempoSilencio > SILENCIO_MAXIMO_MS && transcricaoFinal.length > 0) {
-                    document.getElementById('indicadorSilencio').innerHTML = "⚠️ Silêncio detectado - Continue a leitura...";
-                } else if (tempoSilencio > SILENCIO_MAXIMO_MS) {
-                    document.getElementById('indicadorSilencio').innerHTML = "🎤 Comece a ler o texto...";
-                } else {
-                    document.getElementById('indicadorSilencio').innerHTML = "🎤 Leitura em andamento...";
-                }
-            }, 1000);
-        }
+    function mostrarErro(mensagem) {
+        document.getElementById('app').innerHTML = `
+            <div class="erro-acesso"><h2>⛔ Acesso Negado</h2><p>${mensagem}</p><button onclick="window.history.back()">Voltar</button></div>
+        `;
+    }
 
-        function iniciarTimer() {
-            let segundosDecorridos = 0;
-            timerInterval = setInterval(() => {
-                segundosDecorridos++;
-                const m = Math.floor(segundosDecorridos / 60);
-                const s = segundosDecorridos % 60;
-                document.getElementById('timer').innerText = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-                if (segundosDecorridos >= TEMPO_MAXIMO_SEGUNDOS - 10) {
-                    document.getElementById('timer').style.color = '#f56565';
-                }
-            }, 1000);
-        }
-
-        function iniciarTimeoutAutomatico() {
-            timeoutId = setTimeout(() => {
-                if (recognition && document.getElementById('telaGravacao').classList.contains('hidden') === false) {
-                    alert("⏰ Tempo limite de 2 minutos atingido.");
-                    pararLeitura();
-                }
-            }, TEMPO_MAXIMO_SEGUNDOS * 1000);
-        }
-
-        function pararLeitura() {
-            if (timerInterval) clearInterval(timerInterval);
-            if (timeoutId) clearTimeout(timeoutId);
-            if (silencioTimeout) clearInterval(silencioTimeout);
-            if (recognition) { try { recognition.stop(); } catch(e) {} }
-            
-            const tempoTotalSegundos = (Date.now() - tempoInicio) / 1000;
-            processarResultado(tempoTotalSegundos);
-        }
-
-        function processarResultado(segundos) {
-            const original = TEXTO_BASE.toLowerCase().replace(/[.,!?;]/g, "").split(' ');
-            const aluno = transcricaoFinal.toLowerCase().replace(/[.,!?;]/g, "").split(' ');
-            
-            let acertos = 0;
-            const minLen = Math.min(original.length, aluno.length);
-            for (let i = 0; i < minLen; i++) {
-                if (original[i] === aluno[i]) acertos++;
-            }
-            
-            const ppm = Math.round((acertos / segundos) * 60);
-            const precisao = Math.round((acertos / original.length) * 100);
-            
-            let nivel = "";
-            if (precisao >= 90 && ppm >= 80) nivel = "Avançado";
-            else if (precisao >= 70 && ppm >= 50) nivel = "Proficiente";
-            else if (precisao >= 50 && ppm >= 30) nivel = "Em desenvolvimento";
-            else nivel = "Inicial";
-            
-            const resultadoHTML = TEXTO_BASE.split(' ').map((palavra, idx) => {
-                const alunoIdx = idx < aluno.length ? aluno[idx] : null;
-                const isCorreto = alunoIdx === palavra.toLowerCase().replace(/[.,!?;]/g, "");
-                return `<span class="palavra ${isCorreto ? 'correto' : 'erro'}">${palavra}</span>`;
-            }).join('');
-            
-            document.getElementById('resPPM').innerText = ppm;
-            document.getElementById('resPrecisao').innerText = precisao;
-            document.getElementById('resTempo').innerText = Math.round(segundos);
-            document.getElementById('resNivel').innerHTML = nivel;
-            document.getElementById('resultadoVisual').innerHTML = resultadoHTML + '<div style="margin-top:15px;font-size:14px;"><span style="color:#48bb78;">✅ Verde = Correta</span> | <span style="color:#f56565;">🔴 Vermelho = Não reconhecida</span></div>';
-            
-            document.getElementById('telaGravacao').classList.add('hidden');
-            document.getElementById('telaFinal').classList.remove('hidden');
-            
-            salvarResultado(ppm, precisao, segundos, nivel, acertos, original.length - acertos);
-        }
-
-        async function salvarResultado(ppm, precisao, tempo, nivel, acertos, erros) {
-            const statusDiv = document.getElementById('statusSalvamento');
-            statusDiv.innerHTML = '<span class="loading"></span> Salvando resultado...';
-            
-            const dados = {
-                tipo_atividade: "fluencia",
-                aluno_id: ALUNO_ID || null,
-                turma_id: TURMA_ID || null,
-                jogo_id: JOGO_ID || null,
-                ppm: ppm,
-                nivel_proficiencia: nivel,
-                texto_avaliacao: TEXTO_BASE.substring(0, 500),
-                transcricao_aluno: transcricaoFinal.substring(0, 500),
-                tempo_segundos: Math.round(tempo),
-                acertos: acertos,
-                erros: erros,
-                total_questoes: acertos + erros,
-                habilidade_bncc: "EF35LP01",
-                aluno_nome: ALUNO_NOME || null
-            };
-            
-            try {
-                const response = await fetch(`${SUPABASE_URL}/rest/v1/resultados?apikey=${SUPABASE_KEY}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(dados)
-                });
-                if (response.ok || response.status === 201) {
-                    statusDiv.innerHTML = '✅ Resultado salvo com sucesso!';
-                    statusDiv.className = 'sucesso';
-                } else {
-                    throw new Error(await response.text());
-                }
-            } catch (error) {
-                console.error("Erro ao salvar:", error);
-                statusDiv.innerHTML = `⚠️ Salvando localmente: ${error.message}`;
-                statusDiv.className = 'alerta';
-                localStorage.setItem('saci_sabido_resultado_fallback', JSON.stringify(dados));
-            }
-        }
-
-        function fecharJanela() {
-            try {
-                window.close();
-                setTimeout(() => {
-                    document.getElementById('fallbackLink').classList.remove('hidden');
-                }, 1000);
-            } catch(e) {
-                document.getElementById('fallbackLink').classList.remove('hidden');
-            }
-        }
-
-        function voltarParaAtividades() {
-            if (document.referrer) {
-                window.location.href = document.referrer;
-            } else {
-                alert("Feche esta aba manualmente para voltar às atividades.");
-            }
-        }
-
-        carregarTexto();
-    </script>
+    async function carregarJogo() {
+        const acesso = await verificarAcesso();
+        if (!acesso && !modoTeste) return;
+        
+        document.getElementById('app').innerHTML = `
+            <div class="container">
+                <div id="telaInicial">
+                    <h1>➕ Fluência em Adição</h1>
+                    <p>Calcule o resultado da soma!</p>
+                    <div class="info-sesi">📚 Habilidade: EF.02.MAT.1.33 - Resolver problemas de adição</div>
+                    <div style="background:#f1f5f9; border-radius:20px; padding:12px; margin:20px 0; text-align:left;">
+                        <strong>📋 Como jogar:</strong><br>• Você verá dois números.<br>• Digite o resultado da soma.<br>• Cada acerto vale 10 pontos.<br>• Cada erro desconta 5 pontos.<br>• Complete 10 perguntas!
+                    </div>
+                    <button id="btnIniciar">🚀 INICIAR JOGO</button>
+                    <div class="mt-2" style="font-size:12px;">${modoTeste ? '🔧 Modo teste' : '✅ Conectado'}</div>
+                </div>
+                <div id="telaJogo" class="hidden">
+                    <div style="display:flex; justify-content:space-between; background:#f8fafc; border-radius:30px; padding:12px; margin-bottom:25px; gap:15px; flex-wrap:wrap;">
+                        <div style="background:white; border-radius:20px; padding:8px; flex:1;"><span style="font-size:12px;">PONTOS</span><div style="font-size:28px; font-weight:800;" id="pontos">0</div></div>
+                        <div style="background:white; border-radius:20px; padding:8px; flex:1;"><span style="font-size:12px;">PERGUNTA</span><div style="font-size:28px; font-weight:800;" id="perguntaAtual">1</div></div>
+                    </div>
+                    <div class="numeros-container">
+                        <div class="numero-card" id="numeroEsquerda">0</div>
+                        <div style="font-size:48px; font-weight:bold;">+</div>
+                        <div class="numero-card" id="numeroDireita">0</div>
+                        <div style="font-size:48px; font-weight:bold;">=</div>
+                        <input type="number" id="inputResposta" placeholder="?" style="font-size:32px; width:120px; text-align:center; border-radius:20px; border:2px solid #e2e8f0; padding:15px;">
+                    </div>
+                    <button id="btnVerificar" style="background:#22c55e;">✓ VERIFICAR</button>
+                    <div id="feedbackJogo" class="feedback"></div>
+                    <button id="btnSair">🚪 SAIR</button>
+                </div>
+                <div id="telaFinal" class="hidden">
+                    <h1>🏆 Fim de jogo!</h1>
+                    <div style="background:#eef2ff; padding:20px; border-radius:30px; margin:20px 0;">
+                        <p><strong>Pontuação final:</strong> <span id="finalPontos">0</span></p>
+                        <p><strong>Acertos:</strong> <span id="finalAcertos">0</span></p>
+                        <p><strong>Erros:</strong> <span id="finalErros">0</span></p>
+                    </div>
+                    <button id="btnNovamente">🔄 JOGAR NOVAMENTE</button>
+                </div>
+            </div>
+        `;
+        
+        document.getElementById('btnIniciar').onclick = iniciarJogo;
+        document.getElementById('btnSair').onclick = () => {
+            if (jogoAtivo && confirm("Deseja sair?")) finalizarJogo();
+            else if (!jogoAtivo) { document.getElementById('telaJogo').classList.add('hidden'); document.getElementById('telaInicial').classList.remove('hidden'); }
+        };
+        document.getElementById('btnNovamente').onclick = () => {
+            document.getElementById('telaFinal').classList.add('hidden');
+            document.getElementById('telaInicial').classList.remove('hidden');
+        };
+        document.getElementById('btnVerificar').onclick = verificarResposta;
+        document.getElementById('inputResposta').onkeypress = (e) => { if (e.key === 'Enter') verificarResposta(); };
+    }
+    
+    carregarJogo();
+</script>
 </body>
 </html>
