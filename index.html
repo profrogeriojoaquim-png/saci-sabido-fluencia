@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Saci Sabido - Fluência em Adição</title>
+    <title>Saci Sabido - Fluência Leitora</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', system-ui, sans-serif;
             background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
@@ -18,72 +18,174 @@
         .container {
             background: white;
             border-radius: 40px;
-            padding: 24px;
-            max-width: 900px;
+            padding: 32px;
+            max-width: 1000px;
             width: 100%;
             box-shadow: 0 20px 40px rgba(0,0,0,0.2);
             text-align: center;
         }
+        h1 { font-size: 28px; margin-bottom: 10px; color: #1e293b; }
+        h2 { font-size: 24px; margin-bottom: 15px; color: #1e293b; }
         button {
             background: #6366f1;
             color: white;
             border: none;
-            padding: 12px 28px;
-            font-size: 16px;
+            padding: 14px 32px;
+            font-size: 18px;
             font-weight: bold;
-            border-radius: 40px;
+            border-radius: 50px;
             cursor: pointer;
-            margin: 5px;
+            margin: 8px;
             transition: all 0.2s ease;
         }
         button:hover { background: #4f46e5; transform: scale(1.02); }
+        button:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
         .hidden { display: none; }
-        .feedback {
-            margin: 15px auto;
-            padding: 10px;
-            border-radius: 40px;
-            font-weight: bold;
-        }
-        .feedback-sucesso { background: #bbf7d0; color: #166534; }
-        .feedback-erro { background: #fee2e2; color: #991b1b; }
-        .numero-card {
-            background: #f1f5f9;
+        
+        .texto-leitura {
+            background: #f8fafc;
             border-radius: 24px;
-            padding: 30px;
-            text-align: center;
-            font-size: 48px;
+            padding: 32px;
+            font-size: 26px;
+            line-height: 1.8;
+            text-align: left;
+            margin: 20px 0;
+            font-family: 'Georgia', 'Times New Roman', Times, serif;
+            max-height: 450px;
+            overflow-y: auto;
+            border: 1px solid #e2e8f0;
+            color: #1e293b;
+        }
+        
+        .palavra { 
+            display: inline-block; 
+            margin: 0 2px;
+            padding: 2px 4px; 
+            border-radius: 8px; 
+            transition: background-color 0.1s ease;
+            font-size: 26px;
+            line-height: 1.8;
+        }
+        .palavra-correta { 
+            background: #bbf7d0; 
+            color: #166534; 
+        }
+        
+        .timer {
+            font-size: 56px;
             font-weight: bold;
             font-family: monospace;
-            min-width: 150px;
-        }
-        .numeros-container {
-            display: flex;
-            gap: 20px;
-            align-items: center;
-            justify-content: center;
+            background: #1e293b;
+            color: #10b981;
+            padding: 15px 30px;
+            border-radius: 80px;
+            display: inline-block;
             margin: 15px 0;
-            flex-wrap: wrap;
+            letter-spacing: 3px;
         }
-        .text-center { text-align: center; }
-        .mt-2 { margin-top: 8px; }
-        .info-sesi {
+        
+        .resultado-card {
+            background: #eef2ff;
+            padding: 25px;
+            border-radius: 30px;
+            margin: 20px 0;
+        }
+        .resultado-card h3 { color: #1e3c72; margin-bottom: 12px; font-size: 18px; }
+        .resultado-valor { font-size: 42px; font-weight: bold; color: #6366f1; margin-bottom: 15px; }
+        
+        .info-sesi { 
+            background: #fef9c3; 
+            border-radius: 20px; 
+            padding: 12px; 
+            font-size: 14px; 
+            color: #854d0e; 
+            margin-bottom: 20px;
+        }
+        
+        .aviso-admin {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 12px;
+            margin-bottom: 20px;
+            border-radius: 12px;
+            font-size: 14px;
+            color: #92400e;
+        }
+        
+        .btn-gravando {
+            background: #ef4444;
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .status-microfone {
+            font-size: 16px;
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 30px;
+            font-weight: bold;
+        }
+        .status-ok { background: #bbf7d0; color: #166534; }
+        .status-erro { background: #fee2e2; color: #991b1b; }
+        .status-info { background: #dbeafe; color: #1e40af; }
+        
+        .botoes-container { 
+            display: flex; 
+            gap: 15px; 
+            justify-content: center; 
+            flex-wrap: wrap; 
+            margin-top: 20px;
+        }
+        
+        .msg-salvo { 
+            margin-top: 20px; 
+            padding: 15px; 
+            border-radius: 30px; 
+            font-weight: bold; 
+            font-size: 16px;
+        }
+        .msg-sucesso { background: #bbf7d0; color: #166534; }
+        .msg-erro { background: #fee2e2; color: #991b1b; }
+        .msg-info { background: #dbeafe; color: #1e40af; }
+        
+        .palavras-dificeis-container {
+            margin-top: 20px;
+            padding: 15px;
             background: #fef9c3;
             border-radius: 20px;
-            padding: 10px;
-            margin-top: 10px;
-            font-size: 12px;
-            color: #854d0e;
+            text-align: left;
         }
-        .erro-acesso {
-            text-align: center;
-            padding: 50px;
-            background: white;
-            border-radius: 40px;
-            max-width: 500px;
-            margin: 20px auto;
+        .palavra-dificil {
+            display: inline-block;
+            background: #fed7aa;
+            padding: 5px 12px;
+            border-radius: 20px;
+            margin: 5px;
+            font-size: 16px;
         }
-        .erro-acesso h2 { color: #e53e3e; margin-bottom: 20px; }
-        .erro-acesso button { background: #6366f1; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; margin-top: 20px; }
+        
+        .fallback-link {
+            margin-top: 20px;
+            font-size: 14px;
+        }
+        .fallback-link a {
+            color: #6366f1;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+        
+        @media (max-width: 768px) {
+            .container { padding: 20px; }
+            .texto-leitura { font-size: 20px; padding: 20px; }
+            .palavra { font-size: 20px; }
+            .timer { font-size: 40px; }
+            .resultado-valor { font-size: 32px; }
+            button { padding: 10px 20px; font-size: 16px; }
+        }
     </style>
 </head>
 <body>
@@ -91,286 +193,398 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+    // ==================== CONFIGURAÇÕES ====================
     const SUPABASE_URL = 'https://qmcqffnawtfaenyziwsn.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFtY3FmZm5hd3RmYWVueXppd3NuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxNTM5NTMsImV4cCI6MjA4OTcyOTk1M30._CjaNoeJeQp-8s8Jt-dk3bJfktdEV97R5LhLnWgYrNc';
-    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    
+    // Parâmetros da URL
     const urlParams = new URLSearchParams(window.location.search);
-    const jogoSlug = urlParams.get('jogo_slug');
+    const atividadeId = urlParams.get('atividade_id');
     const alunoId = urlParams.get('aluno_id');
     const turmaId = urlParams.get('turma_id');
     const escolaId = urlParams.get('escola_id');
     const modoTeste = urlParams.get('modo_teste') === 'true';
-
-    let pontuacao = 0, acertos = 0, erros = 0, jogoAtivo = false;
-    let tempoInicio = null, tempoDecorrido = 0, intervalo = null;
-    let detalhesErros = [];
-    let numero1 = 0, numero2 = 0, respostaCorreta = 0;
-    let perguntasRespondidas = 0;
-    let jogoId = null;
-    const TOTAL_PERGUNTAS = 10;
-
-    function getMaxNumero() {
-        if (acertos < 5) return 20;
-        if (acertos < 10) return 50;
-        return 100;
+    
+    // Modo visualização (sem salvar) se faltar parâmetros essenciais
+    const modoVisualizacao = (!atividadeId || !turmaId || !alunoId);
+    
+    // Variáveis de estado
+    let jogoAtivo = false;
+    let startTime = null;
+    let timerInterval = null;
+    let recognition = null;
+    let transcricaoFinal = "";
+    let statusSalvo = false;
+    let textoParaLer = "";
+    let palavrasOriginais = [];     // texto original (para exibição)
+    let palavrasNormalizadas = [];   // texto sem acentos/pontuação (para comparação)
+    
+    // ==================== FUNÇÕES AUXILIARES ====================
+    function normalizarTexto(txt) {
+        return txt
+            .toLowerCase()
+            .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+            .replace(/[.,!?;:()"']/g, '')
+            .replace(/\s+/g, ' ')
+            .trim();
     }
-
-    function gerarPergunta() {
-        const maxNum = getMaxNumero();
-        numero1 = Math.floor(Math.random() * (maxNum + 1));
-        numero2 = Math.floor(Math.random() * (maxNum + 1));
-        respostaCorreta = numero1 + numero2;
-        
-        document.getElementById('numeroEsquerda').textContent = numero1;
-        document.getElementById('numeroDireita').textContent = numero2;
-        document.getElementById('perguntaAtual').textContent = perguntasRespondidas + 1;
-        document.getElementById('pontos').textContent = Math.floor(pontuacao);
-    }
-
-    function mostrarFeedback(mensagem, tipo) {
-        const feedbackDiv = document.getElementById('feedbackJogo');
-        feedbackDiv.textContent = mensagem;
-        feedbackDiv.className = 'feedback';
-        if (tipo === 'sucesso') feedbackDiv.classList.add('feedback-sucesso');
-        else if (tipo === 'erro') feedbackDiv.classList.add('feedback-erro');
-        setTimeout(() => {
-            if (feedbackDiv.textContent === mensagem) {
-                feedbackDiv.textContent = '';
-                feedbackDiv.className = 'feedback';
-            }
-        }, 2000);
-    }
-
-    function iniciarCronometro() {
-        if (intervalo) clearInterval(intervalo);
-        intervalo = setInterval(() => {
-            if (!jogoAtivo) return;
-            tempoDecorrido = Math.floor((Date.now() - tempoInicio) / 1000);
-        }, 1000);
-    }
-
-    function pararCronometro() { if (intervalo) clearInterval(intervalo); intervalo = null; }
-
-    async function salvarResultado() {
-        if (modoTeste || !alunoId) return;
-        const dados = {
-            aluno_id: alunoId, jogo_id: jogoId, turma_id: turmaId,
-            acertos: acertos, erros: erros, tempo_segundos: tempoDecorrido,
-            total_questoes: TOTAL_PERGUNTAS, habilidade_bncc: 'EF.02.MAT.1.33',
-            detalhes_erros: detalhesErros.slice(0, 20)
-        };
-        await supabaseClient.from('resultados').insert([dados]);
-    }
-
-    async function finalizarJogo() {
-        if (!jogoAtivo) return;
-        jogoAtivo = false;
-        pararCronometro();
-        document.getElementById('finalPontos').textContent = Math.floor(pontuacao);
-        document.getElementById('finalAcertos').textContent = acertos;
-        document.getElementById('finalErros').textContent = erros;
-        await salvarResultado();
-        document.getElementById('telaJogo').classList.add('hidden');
-        document.getElementById('telaFinal').classList.remove('hidden');
-    }
-
-    function verificarResposta() {
-        if (!jogoAtivo) return;
-        const inputResposta = document.getElementById('inputResposta');
-        const respostaAluno = parseInt(inputResposta.value);
-        
-        if (isNaN(respostaAluno)) {
-            mostrarFeedback('Digite um número!', 'erro');
+    
+    async function carregarTexto() {
+        if (modoVisualizacao || modoTeste) {
+            textoParaLer = "O pequeno Saci Sabido encontrou um mistério na mata. Ele usou sua inteligência para resolver o problema sem usar o cachimbo, apenas com sabedoria e envolvimento.";
+            palavrasOriginais = textoParaLer.split(' ');
+            palavrasNormalizadas = normalizarTexto(textoParaLer).split(' ');
             return;
         }
         
-        if (respostaAluno === respostaCorreta) {
-            pontuacao += 10;
-            acertos++;
-            mostrarFeedback(`✅ Correto! +10 pontos`, 'sucesso');
-        } else {
-            pontuacao = Math.max(0, pontuacao - 5);
-            erros++;
-            detalhesErros.push({ num1: numero1, num2: numero2, resposta: respostaAluno, correto: respostaCorreta });
-            mostrarFeedback(`❌ Errado! A resposta correta era ${respostaCorreta}. -5 pontos`, 'erro');
-        }
-        
-        perguntasRespondidas++;
-        inputResposta.value = '';
-        document.getElementById('pontos').textContent = Math.floor(pontuacao);
-        
-        if (perguntasRespondidas >= TOTAL_PERGUNTAS) {
-            finalizarJogo();
-        } else {
-            gerarPergunta();
-        }
-    }
-
-    function iniciarJogo() {
-        pontuacao = 0; acertos = 0; erros = 0; perguntasRespondidas = 0;
-        detalhesErros = []; jogoAtivo = true;
-        tempoInicio = Date.now(); tempoDecorrido = 0;
-        document.getElementById('pontos').textContent = "0";
-        document.getElementById('perguntaAtual').textContent = "1";
-        gerarPergunta();
-        iniciarCronometro();
-        document.getElementById('telaInicial').classList.add('hidden');
-        document.getElementById('telaJogo').classList.remove('hidden');
-        document.getElementById('telaFinal').classList.add('hidden');
-        document.getElementById('inputResposta').focus();
-    }
-
-    async function verificarAcesso() {
-        console.log('=== VERIFICANDO ACESSO ===');
-        console.log('jogoSlug:', jogoSlug);
-        console.log('alunoId:', alunoId);
-        console.log('turmaId:', turmaId);
-        
-        if (modoTeste) {
-            console.log('Modo teste - acesso liberado');
-            return true;
-        }
-        
-        if (!jogoSlug || !turmaId) {
-            mostrarErro('❌ Link inválido. Faltam parâmetros.');
-            return false;
-        }
-        
         try {
-            // 1. Buscar o ID do jogo
-            const { data: jogo, error: erroJogo } = await supabaseClient
-                .from('jogos')
-                .select('id')
-                .eq('slug', jogoSlug)
+            const { data, error } = await supabase
+                .from('atividades_fluencia')
+                .select('texto_avaliacao, titulo')
+                .eq('id', atividadeId)
                 .single();
-            
-            if (erroJogo || !jogo) {
-                console.log('Jogo não encontrado:', erroJogo);
-                mostrarErro('❌ Jogo não encontrado.');
-                return false;
-            }
-            
-            jogoId = jogo.id;
-            console.log('Jogo ID:', jogoId);
-            
-            // 2. Buscar a atribuição na tabela jogos_turma
-            const { data: atribuicao, error: erroAttr } = await supabaseClient
-                .from('jogos_turma')
-                .select('status, data_inicio, data_fim')
-                .eq('turma_id', turmaId)
-                .eq('jogo_id', jogoId);
-            
-            console.log('Resultado da busca:', atribuicao);
-            
-            if (erroAttr) {
-                console.log('Erro na consulta:', erroAttr);
-                mostrarErro('Erro ao verificar acesso.');
-                return false;
-            }
-            
-            if (!atribuicao || atribuicao.length === 0) {
-                console.log('Nenhuma atribuição encontrada');
-                mostrarErro('❌ Este jogo não foi atribuído à sua turma pelo professor.');
-                return false;
-            }
-            
-            const jogoTurma = atribuicao[0];
-            console.log('Atribuição encontrada:', jogoTurma);
-            
-            if (jogoTurma.status === 'inativo') {
-                mostrarErro('❌ Este jogo está bloqueado pelo professor.');
-                return false;
-            }
-            
-            const hoje = new Date().toISOString().split('T')[0];
-            console.log('Hoje:', hoje);
-            
-            if (jogoTurma.status === 'agendado') {
-                if (jogoTurma.data_inicio && hoje < jogoTurma.data_inicio) {
-                    mostrarErro(`📅 Disponível a partir de ${jogoTurma.data_inicio}`);
-                    return false;
-                }
-                if (jogoTurma.data_fim && hoje > jogoTurma.data_fim) {
-                    mostrarErro(`⏰ Prazo encerrado em ${jogoTurma.data_fim}`);
-                    return false;
-                }
-            }
-            
-            console.log('✅ ACESSO LIBERADO!');
-            return true;
-            
-        } catch (erro) {
-            console.log('ERRO na verificação:', erro);
-            mostrarErro('Erro ao verificar acesso. Tente novamente.');
-            return false;
+            if (error || !data) throw new Error('Texto não encontrado');
+            textoParaLer = data.texto_avaliacao;
+            document.title = `Saci Sabido - ${data.titulo}`;
+            palavrasOriginais = textoParaLer.split(' ');
+            palavrasNormalizadas = normalizarTexto(textoParaLer).split(' ');
+        } catch (e) {
+            console.error(e);
+            textoParaLer = "Erro ao carregar texto. Tente novamente.";
+            palavrasOriginais = textoParaLer.split(' ');
+            palavrasNormalizadas = normalizarTexto(textoParaLer).split(' ');
         }
     }
-
-    function mostrarErro(mensagem) {
-        document.getElementById('app').innerHTML = `
-            <div class="erro-acesso"><h2>⛔ Acesso Negado</h2><p>${mensagem}</p><button onclick="window.history.back()">Voltar</button></div>
-        `;
+    
+    function atualizarFeedbackVisual(palavrasLidasNorm) {
+        const container = document.getElementById('textoComPalavras');
+        if (!container) return;
+        let html = '';
+        palavrasOriginais.forEach((palavra, idx) => {
+            const palavraNorm = palavrasNormalizadas[idx];
+            const foiLida = palavrasLidasNorm.includes(palavraNorm);
+            const classe = foiLida ? 'palavra-correta' : '';
+            html += `<span class="palavra ${classe}">${palavra}</span> `;
+        });
+        container.innerHTML = html;
     }
-
-    async function carregarJogo() {
-        const acesso = await verificarAcesso();
-        if (!acesso && !modoTeste) return;
+    
+    function mostrarMensagem(texto, tipo, elementoId = 'msgSalvoResultado') {
+        const msgDiv = document.getElementById(elementoId);
+        if (msgDiv) {
+            msgDiv.innerHTML = texto;
+            msgDiv.className = `msg-salvo ${tipo === 'sucesso' ? 'msg-sucesso' : tipo === 'info' ? 'msg-info' : 'msg-erro'}`;
+            msgDiv.classList.remove('hidden');
+            setTimeout(() => msgDiv.classList.add('hidden'), 5000);
+        }
+    }
+    
+    async function salvarResultado(ppm, precisao, tempo, nivel, acertos, erros, palavrasDificeis) {
+        if (modoVisualizacao || modoTeste || !alunoId) {
+            mostrarMensagem('🔧 Modo teste/visualização - Nenhum dado foi salvo', 'info');
+            return;
+        }
+        statusSalvo = true;
+        const dados = {
+            atividade_id: atividadeId,
+            aluno_id: alunoId,
+            turma_id: turmaId,
+            ppm: ppm,
+            precisao: precisao,
+            tempo_segundos: tempo,
+            nivel_proficiencia: nivel,
+            transcricao_aluno: transcricaoFinal.substring(0, 2000),
+            palavras_dificeis: palavrasDificeis.slice(0, 20)
+        };
+        try {
+            const { error } = await supabase.from('resultados_fluencia').insert([dados]);
+            if (error) throw error;
+            mostrarMensagem('✅ Resultado salvo com sucesso!', 'sucesso');
+        } catch (e) {
+            console.error(e);
+            mostrarMensagem(`❌ Erro ao salvar: ${e.message}`, 'erro');
+        }
+    }
+    
+    function processarResultado(tempoTotal) {
+        if (timerInterval) clearInterval(timerInterval);
+        if (recognition) {
+            try { recognition.stop(); } catch(e) {}
+        }
+        
+        const textoNorm = normalizarTexto(transcricaoFinal);
+        const palavrasLidasNorm = textoNorm.split(' ').filter(w => w.length > 0);
+        
+        let acertos = 0;
+        const palavrasErradas = [];
+        palavrasNormalizadas.forEach((palavraNorm, idx) => {
+            if (palavrasLidasNorm.includes(palavraNorm)) {
+                acertos++;
+            } else {
+                if (!palavrasErradas.includes(palavrasOriginais[idx])) {
+                    palavrasErradas.push(palavrasOriginais[idx]);
+                }
+            }
+        });
+        
+        const ppm = Math.round((acertos / Math.max(tempoTotal, 1)) * 60);
+        const precisao = Math.round((acertos / palavrasNormalizadas.length) * 100);
+        let nivel = '';
+        if (precisao >= 85 && ppm >= 100) nivel = '🔵 Avançado';
+        else if (precisao >= 70 && ppm >= 70) nivel = '🟢 Proficiente';
+        else if (precisao >= 50 && ppm >= 40) nivel = '🟡 Em desenvolvimento';
+        else nivel = '🔴 Inicial';
+        
+        // Exibir resultados
+        document.getElementById('resultadoVelocidade').textContent = `${ppm} palavras/minuto`;
+        document.getElementById('resultadoPrecisao').textContent = `${precisao}% de acertos`;
+        document.getElementById('resultadoTempo').textContent = `${tempoTotal} segundos`;
+        document.getElementById('resultadoNivel').textContent = nivel;
+        
+        if (palavrasErradas.length > 0) {
+            const divPalavras = document.getElementById('palavrasDificeis');
+            divPalavras.innerHTML = `<strong>📖 Palavras para praticar:</strong><br>${palavrasErradas.slice(0, 10).map(p => `<span class="palavra-dificil">${p}</span>`).join('')}`;
+            divPalavras.classList.remove('hidden');
+        }
+        
+        document.getElementById('telaLeitura').classList.add('hidden');
+        document.getElementById('telaResultado').classList.remove('hidden');
+        
+        salvarResultado(ppm, precisao, tempoTotal, nivel, acertos, palavrasNormalizadas.length - acertos, palavrasErradas);
+    }
+    
+    function reiniciarJogo() {
+        if (timerInterval) clearInterval(timerInterval);
+        if (recognition) {
+            try { recognition.stop(); } catch(e) {}
+        }
+        transcricaoFinal = "";
+        statusSalvo = false;
+        const btn = document.getElementById('btnIniciarLeitura');
+        if (btn) {
+            btn.disabled = false;
+            btn.textContent = '🎤 INICIAR LEITURA';
+            btn.classList.remove('btn-gravando');
+        }
+        const btnParar = document.getElementById('btnParar');
+        if (btnParar) btnParar.disabled = true;
+        document.getElementById('timerDisplay').textContent = '00:00';
+        document.getElementById('statusMicrofone').innerHTML = '';
+        document.getElementById('statusMicrofone').className = 'status-microfone';
+        // Reset visual sem destaques
+        const container = document.getElementById('textoComPalavras');
+        if (container) {
+            let html = '';
+            palavrasOriginais.forEach(palavra => {
+                html += `<span class="palavra">${palavra}</span> `;
+            });
+            container.innerHTML = html;
+        }
+    }
+    
+    function iniciarReconhecimento() {
+        const btn = document.getElementById('btnIniciarLeitura');
+        btn.disabled = true;
+        btn.textContent = '🎤 Gravando...';
+        btn.classList.add('btn-gravando');
+        
+        document.getElementById('statusMicrofone').innerHTML = '🎤 Microfone ativo - Leia o texto em voz alta';
+        document.getElementById('statusMicrofone').className = 'status-microfone status-ok';
+        document.getElementById('btnParar').disabled = false;
+        
+        startTime = Date.now();
+        transcricaoFinal = "";
+        
+        timerInterval = setInterval(() => {
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            const minutes = Math.floor(elapsed / 60);
+            const seconds = elapsed % 60;
+            document.getElementById('timerDisplay').textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            if (elapsed >= 120 && !statusSalvo) {
+                pararReconhecimento();
+                mostrarMensagem('⏰ Tempo limite de 2 minutos atingido.', 'erro', 'msgSalvoResultado');
+            }
+        }, 1000);
+        
+        if (!('webkitSpeechRecognition' in window)) {
+            mostrarMensagem('Seu navegador não suporta reconhecimento de voz. Use Google Chrome ou Edge.', 'erro', 'msgSalvoResultado');
+            pararReconhecimento();
+            return;
+        }
+        
+        recognition = new webkitSpeechRecognition();
+        recognition.lang = 'pt-BR';
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        
+        recognition.onresult = (event) => {
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+                if (event.results[i].isFinal) {
+                    transcricaoFinal += event.results[i][0].transcript + " ";
+                }
+            }
+            const textoNorm = normalizarTexto(transcricaoFinal);
+            const palavrasLidasNorm = textoNorm.split(' ').filter(w => w.length > 0);
+            atualizarFeedbackVisual(palavrasLidasNorm);
+            document.getElementById('statusMicrofone').innerHTML = '🎤 Leitura em andamento... Fale pausadamente';
+        };
+        
+        recognition.onerror = (event) => {
+            console.error(event.error);
+            if (event.error === 'not-allowed') {
+                document.getElementById('statusMicrofone').innerHTML = '❌ Permissão do microfone negada. Clique no ícone de cadeado e permita.';
+            } else if (event.error === 'no-speech') {
+                document.getElementById('statusMicrofone').innerHTML = '⚠️ Nenhum discurso detectado. Fale mais alto.';
+            } else {
+                document.getElementById('statusMicrofone').innerHTML = '❌ Erro: ' + event.error;
+            }
+            document.getElementById('statusMicrofone').className = 'status-microfone status-erro';
+        };
+        
+        recognition.onend = () => {
+            if (document.getElementById('telaLeitura') && !document.getElementById('telaLeitura').classList.contains('hidden')) {
+                if (!statusSalvo) pararReconhecimento();
+            }
+        };
+        
+        recognition.start();
+    }
+    
+    function pararReconhecimento() {
+        if (timerInterval) clearInterval(timerInterval);
+        if (recognition) {
+            try { recognition.stop(); } catch(e) {}
+        }
+        const tempoTotal = Math.floor((Date.now() - startTime) / 1000);
+        processarResultado(tempoTotal);
+    }
+    
+    // ==================== FINALIZAÇÃO (SEM ERRO 404) ====================
+    function finalizar() {
+        // Tenta fechar a janela (funciona se foi aberta por window.open)
+        if (window.opener && !window.opener.closed) {
+            // Opcional: notificar a janela pai
+            try {
+                window.opener.postMessage('atividade_concluida', '*');
+            } catch(e) {}
+            window.close();
+        }
+        // Fallback: exibe mensagem com link manual, nunca redireciona para referrer quebrado
+        setTimeout(() => {
+            if (!window.closed) {
+                const fallbackDiv = document.createElement('div');
+                fallbackDiv.className = 'fallback-link';
+                fallbackDiv.innerHTML = '<p>⚠️ Não foi possível fechar automaticamente. Clique <a id="fecharManualLink" href="#">aqui</a> para voltar à lista de atividades.</p>';
+                const container = document.querySelector('.container');
+                container.appendChild(fallbackDiv);
+                document.getElementById('fecharManualLink').onclick = (e) => {
+                    e.preventDefault();
+                    // Usa a URL da página que chamou (passada por parâmetro return_url, se existir)
+                    const returnUrl = urlParams.get('return_url');
+                    if (returnUrl && returnUrl.startsWith('http')) {
+                        window.location.href = returnUrl;
+                    } else {
+                        alert('Volte manualmente para a aba do Saci Sabido e recarregue a página.');
+                    }
+                };
+                // Esconde botões para não gerar confusão
+                document.getElementById('btnConcluir').style.display = 'none';
+                document.getElementById('btnNovamente').style.display = 'none';
+            }
+        }, 300);
+    }
+    
+    // ==================== INICIALIZAÇÃO DA INTERFACE ====================
+    async function iniciarInterface() {
+        await carregarTexto();
         
         document.getElementById('app').innerHTML = `
             <div class="container">
                 <div id="telaInicial">
-                    <h1>➕ Fluência em Adição</h1>
-                    <p>Calcule o resultado da soma!</p>
-                    <div class="info-sesi">📚 Habilidade: EF.02.MAT.1.33 - Resolver problemas de adição</div>
-                    <div style="background:#f1f5f9; border-radius:20px; padding:12px; margin:20px 0; text-align:left;">
-                        <strong>📋 Como jogar:</strong><br>• Você verá dois números.<br>• Digite o resultado da soma.<br>• Cada acerto vale 10 pontos.<br>• Cada erro desconta 5 pontos.<br>• Complete 10 perguntas!
-                    </div>
-                    <button id="btnIniciar">🚀 INICIAR JOGO</button>
-                    <div class="mt-2" style="font-size:12px;">${modoTeste ? '🔧 Modo teste' : '✅ Conectado'}</div>
+                    <h1>📖 Fluência Leitora</h1>
+                    <p>Leia o texto em voz alta com calma e clareza</p>
+                    ${modoVisualizacao ? '<div class="aviso-admin">🔧 MODO VISUALIZAÇÃO - Os dados NÃO serão salvos</div>' : ''}
+                    ${modoTeste ? '<div class="aviso-admin">🔧 MODO TESTE - Os dados NÃO serão salvos</div>' : ''}
+                    <div class="info-sesi">📚 Habilidade: EF35LP09 - Ler com fluência e precisão</div>
+                    <div class="texto-leitura">${textoParaLer}</div>
+                    <button id="btnComecar">🚀 INICIAR LEITURA</button>
                 </div>
-                <div id="telaJogo" class="hidden">
-                    <div style="display:flex; justify-content:space-between; background:#f8fafc; border-radius:30px; padding:12px; margin-bottom:25px; gap:15px; flex-wrap:wrap;">
-                        <div style="background:white; border-radius:20px; padding:8px; flex:1;"><span style="font-size:12px;">PONTOS</span><div style="font-size:28px; font-weight:800;" id="pontos">0</div></div>
-                        <div style="background:white; border-radius:20px; padding:8px; flex:1;"><span style="font-size:12px;">PERGUNTA</span><div style="font-size:28px; font-weight:800;" id="perguntaAtual">1</div></div>
+                
+                <div id="telaLeitura" class="hidden">
+                    <h2>🎤 Leia em voz alta</h2>
+                    <div class="timer" id="timerDisplay">00:00</div>
+                    <div class="texto-leitura" id="textoComPalavras">
+                        ${palavrasOriginais.map(p => `<span class="palavra">${p}</span>`).join(' ')}
                     </div>
-                    <div class="numeros-container">
-                        <div class="numero-card" id="numeroEsquerda">0</div>
-                        <div style="font-size:48px; font-weight:bold;">+</div>
-                        <div class="numero-card" id="numeroDireita">0</div>
-                        <div style="font-size:48px; font-weight:bold;">=</div>
-                        <input type="number" id="inputResposta" placeholder="?" style="font-size:32px; width:120px; text-align:center; border-radius:20px; border:2px solid #e2e8f0; padding:15px;">
+                    <div id="statusMicrofone" class="status-microfone"></div>
+                    <div class="botoes-container">
+                        <button id="btnIniciarLeitura">🎤 INICIAR LEITURA</button>
+                        <button id="btnParar" style="background:#ef4444;" disabled>⏹️ PARAR / FINALIZAR</button>
+                        <button id="btnCancelar" style="background:#6b7280;">❌ CANCELAR</button>
                     </div>
-                    <button id="btnVerificar" style="background:#22c55e;">✓ VERIFICAR</button>
-                    <div id="feedbackJogo" class="feedback"></div>
-                    <button id="btnSair">🚪 SAIR</button>
                 </div>
-                <div id="telaFinal" class="hidden">
-                    <h1>🏆 Fim de jogo!</h1>
-                    <div style="background:#eef2ff; padding:20px; border-radius:30px; margin:20px 0;">
-                        <p><strong>Pontuação final:</strong> <span id="finalPontos">0</span></p>
-                        <p><strong>Acertos:</strong> <span id="finalAcertos">0</span></p>
-                        <p><strong>Erros:</strong> <span id="finalErros">0</span></p>
+                
+                <div id="telaResultado" class="hidden">
+                    <h1>📊 Resultado da Proficiência</h1>
+                    <div class="resultado-card">
+                        <h3>⏱️ Velocidade</h3>
+                        <div class="resultado-valor" id="resultadoVelocidade">0 palavras/minuto</div>
+                        <h3>🎯 Precisão</h3>
+                        <div class="resultado-valor" id="resultadoPrecisao">0% de acertos</div>
+                        <h3>⏰ Tempo total</h3>
+                        <div class="resultado-valor" id="resultadoTempo">0 segundos</div>
+                        <h3>📝 Nível</h3>
+                        <div class="resultado-valor" id="resultadoNivel">--</div>
+                        <div id="palavrasDificeis" class="palavras-dificeis-container hidden"></div>
                     </div>
-                    <button id="btnNovamente">🔄 JOGAR NOVAMENTE</button>
+                    <div id="msgSalvoResultado" class="msg-salvo hidden"></div>
+                    <div class="botoes-container">
+                        <button id="btnNovamente">🔄 LER NOVAMENTE</button>
+                        <button id="btnConcluir" style="background:#10b981;">✅ CONCLUIR</button>
+                    </div>
                 </div>
             </div>
         `;
         
-        document.getElementById('btnIniciar').onclick = iniciarJogo;
-        document.getElementById('btnSair').onclick = () => {
-            if (jogoAtivo && confirm("Deseja sair?")) finalizarJogo();
-            else if (!jogoAtivo) { document.getElementById('telaJogo').classList.add('hidden'); document.getElementById('telaInicial').classList.remove('hidden'); }
+        // Eventos
+        document.getElementById('btnComecar').onclick = () => {
+            document.getElementById('telaInicial').classList.add('hidden');
+            document.getElementById('telaLeitura').classList.remove('hidden');
+            reiniciarJogo();
         };
-        document.getElementById('btnNovamente').onclick = () => {
-            document.getElementById('telaFinal').classList.add('hidden');
+        document.getElementById('btnIniciarLeitura').onclick = iniciarReconhecimento;
+        document.getElementById('btnParar').onclick = () => {
+            if (recognition && startTime) pararReconhecimento();
+        };
+        document.getElementById('btnCancelar').onclick = () => {
+            reiniciarJogo();
+            document.getElementById('telaLeitura').classList.add('hidden');
             document.getElementById('telaInicial').classList.remove('hidden');
         };
-        document.getElementById('btnVerificar').onclick = verificarResposta;
-        document.getElementById('inputResposta').onkeypress = (e) => { if (e.key === 'Enter') verificarResposta(); };
+        document.getElementById('btnNovamente').onclick = () => {
+            document.getElementById('telaResultado').classList.add('hidden');
+            document.getElementById('telaInicial').classList.remove('hidden');
+            reiniciarJogo();
+        };
+        document.getElementById('btnConcluir').onclick = finalizar;
+        
+        // Pré-autoriza microfone (pede permissão ao clicar em iniciar)
+        const btnComecar = document.getElementById('btnComecar');
+        btnComecar.onclick = async () => {
+            try {
+                await navigator.mediaDevices.getUserMedia({ audio: true });
+                // Se conseguir, vai para a tela de leitura
+                document.getElementById('telaInicial').classList.add('hidden');
+                document.getElementById('telaLeitura').classList.remove('hidden');
+                reiniciarJogo();
+            } catch (err) {
+                mostrarMensagem('❌ É necessário permitir o acesso ao microfone.', 'erro', 'msgSalvoResultado');
+            }
+        };
     }
     
-    carregarJogo();
+    iniciarInterface();
 </script>
 </body>
 </html>
